@@ -1,27 +1,39 @@
-import { Analyzer, DBAnalysis, DBController, DBEntry } from 'ea-core-gpi-pi';
-import { container } from 'tsyringe';
-import { Logger } from 'winston';
-import { ServerDBAnalysis } from './Analysis';
-import { ServerDBEntry } from './Entry';
-// import {DBCONTROLLER_APP,DBCONTROLLER_ENDPOINT,DBCONTROLLER_KEY,DBCONTROLLER_VERSION} from '../../config'
+import {Analyzer, DBAnalysis, DBController, DBEntry} from 'ea-core-gpi-pi';
+import {container} from 'tsyringe';
+import {Logger} from 'winston';
+import {ServerDBAnalysis} from './Analysis';
+import {ServerDBEntry} from './Entry';
+import mysql from 'promise-mysql';
+import {DBCONTROLLER_APP, DBCONTROLLER_ENDPOINT, DBCONTROLLER_KEY, DBCONTROLLER_VERSION, DBCONTROLLER_HOST, DBCONTROLLER_USER, DBCONTROLLER_PASSWORD, DBCONTROLLER_DBNAME} from '../../config'
+
 export class ServerDBController implements DBController {
 	constructor() {
 		/*
-        Acá inicializar la db.
-        En caso de requerir métodos asíncronos, asignar la referencia acá
-         y crear un método asíncrono que la inicialice.
-         No usar promesas dentro del constructor
+				Acá inicializar la db.
+				En caso de requerir métodos asíncronos, asignar la referencia acá
+				 y crear un método asíncrono que la inicialice.
+				 No usar promesas dentro del constructor
 
-         Cambiar el tipo unknown de la variable DB por el correspondiente
-        */
-		this.db = 'acá inicializar la db';
+				 Cambiar el tipo unknown de la variable DB por el correspondiente
+				*/
+	}
+	async connect() {
+		let connectionPool = mysql.createPool({
+			connectionLimit: 20,
+			host: DBCONTROLLER_HOST,
+			user: DBCONTROLLER_USER,
+			password: DBCONTROLLER_PASSWORD,
+			database: DBCONTROLLER_DBNAME
+		});
+		this.db = await connectionPool;
 		this.$entry = new ServerDBEntry(this.db);
 		this.$analysis = new ServerDBAnalysis(this.db);
+
 	}
-	private readonly db: unknown;
+	private db: mysql.Pool;
 	private readonly logger = container.resolve<Logger>('logger');
-	readonly $entry: DBEntry;
-	readonly $analysis: DBAnalysis;
+	$entry: DBEntry;
+	$analysis: DBAnalysis;
 	async calc(metakey: string): Promise<DBController.calcResult> {
 		const sentiments: Analyzer.sentiments = {
 			Asertividad: NaN,
@@ -47,13 +59,13 @@ export class ServerDBController implements DBController {
 			total: NaN,
 		};
 	}
-	async stats(): Promise<{ [key: string]: number }> {
+	async stats(): Promise<{[key: string]: number}> {
 		return {};
 	}
 	async insert(analysis: Analyzer.Analysis): Promise<void> {
 		return;
 	}
 	async bulkDB(dbPath: string): Promise<DBController.bulkDBResult> {
-		return { accepted: NaN, rejected: NaN };
+		return {accepted: NaN, rejected: NaN};
 	}
 }

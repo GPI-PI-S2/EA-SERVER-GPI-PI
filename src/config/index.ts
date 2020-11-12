@@ -29,5 +29,17 @@ export const DBCONTROLLER_VERSION = process.env.DBCONTROLLER_VERSION
 	: '/v1';
 export const DBCONTROLLER_APP = process.env.DBCONTROLLER_APP;
 export const DBCONTROLLER_KEY = process.env.DBCONTROLLER_KEY;
+export const DBCONTROLLER_HOST = process.env.DBCONTROLLER_HOST
+	? process.env.DBCONTROLLER_HOST
+	: '127.0.0.1';
+export const DBCONTROLLER_USER = process.env.DBCONTROLLER_USER
+	? process.env.DBCONTROLLER_USER
+	: '';
+export const DBCONTROLLER_PASSWORD = process.env.DBCONTROLLER_PASSWORD
+	? process.env.DBCONTROLLER_PASSWORD
+	: '';
+export const DBCONTROLLER_DBNAME = process.env.DBCONTROLLER_DBNAME
+	? process.env.DBCONTROLLER_DBNAME
+	: '';
 
 export const SITE_ENDPOINT = process.env.SITE_ENDPOINT ? process.env.SITE_ENDPOINT : '/';

@@ -22,6 +22,8 @@ import logger from '../../src/loaders/logger';
 export default async () => {
 	logger.info('Serve db started!');
 	const DBController = container.resolve<ServerDBController>('DBController');
+	await DBController.connect();
+	DBController.$entry.create({content: 'asdasd'}, false);
 	const a = await DBController.calc('test');
 	logger.info('test', a);
 };
