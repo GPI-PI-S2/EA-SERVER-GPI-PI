@@ -12,10 +12,10 @@ export class ServerDBAnalysis implements DBAnalysis {
 	async create(entry: DBAnalysis.Input): Promise<void> {
 		return;
 	}
-	async read(_id: string): Promise<DBAnalysis.Analysis> {
+	async read(_id: number): Promise<DBAnalysis.Analysis> {
 		return null;
 	}
-	async update(_id: string, entry: DBAnalysis.Input): Promise<void> {
+	async update(_id: number, entry: DBAnalysis.Input): Promise<void> {
 		return;
 	}
 	async delete(_id): Promise<void> {

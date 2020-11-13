@@ -1,5 +1,5 @@
-import { container } from 'tsyringe';
-import { ServerDBController } from '../../src/controllers/DBController';
+import {container} from 'tsyringe';
+import {ServerDBController} from '../../src/controllers/DBController';
 /*
 LOGS LEVELS de mayor a menor importancia
 error: 0,
@@ -23,7 +23,6 @@ export default async () => {
 	logger.info('Serve db started!');
 	const DBController = container.resolve<ServerDBController>('DBController');
 	await DBController.connect();
-	await DBController.$entry.create({content: 'pishula'}, false);
 	const a = await DBController.calc('test');
 	logger.info('test', a);
 };
