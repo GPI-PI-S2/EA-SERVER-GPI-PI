@@ -28,7 +28,7 @@ export class ServerDBEntry implements DBEntry {
 		}
 		else {
 			if (force) {
-				await this.db.query('UPDATE Entry SET hash = ?, extractor = ?, metaKey = ?, content = ? WHERE _id = ?;',
+				await this.db.query('UPDATE Entry SET hash = ?, extractor = ?, metaKey = ?, content = ?, _deleted = 0 WHERE _id = ?;',
 					[hash, extractor, metaKey, content, storedId]);
 			}
 		}
@@ -72,16 +72,32 @@ export class ServerDBEntry implements DBEntry {
 	): Promise<DBController.PaggedList<DBEntry.Entry>> {
 		// ojo, los filtros pueden llegar indefinidos
 		const {created, extractor, metaKey} = filter;
-		const limit = paginator.size;
-		const offset = paginator.page * paginator.size;
-		const res = await this.db.query('SELECT _id, hash, created, extractor, metaKey, content, _deleted FROM Entry WHERE _deleted = 0 LIMIT ? OFFSET ?;', [limit, offset]);
-		const total = await this.db.query('SELECT COUNT(_id) as total FROM Entry WHERE _deleted = 0');
-		console.log(res);
+		const filterArray = [{
+			key: 'DATE(created) = DATE(?)', value: created
+		}, {
+			key: 'extractor = ?', value: extractor
+		}, {
+			key: 'metaKey = ?', value: metaKey
+		}]
+			.filter(({value}) => value); // seleccionar filtros thruthy
+
+		const SQLFilterKeys = ((filterArray.length === 0) ? '' : ' AND ') + filterArray.map(({key}) => key).join(' AND ');
+		const SQLFilterValues = filterArray.map(({value}) => value);
+
+		const pageOffset = paginator.page * paginator.size;
+		const pageSQL: any[] = [paginator.size, pageOffset];
+
+		console.log(SQLFilterValues.concat(pageSQL));
+		const res = await this.db.query('SELECT _id, hash, created, extractor, metaKey, content FROM Entry WHERE _deleted = 0'
+			+ SQLFilterKeys
+			+ ' LIMIT ? OFFSET ?;'
+			, SQLFilterValues.concat(pageSQL));
+
 		return {
 			list: res.map((dataRow: DBEntry.Entry) => ({...dataRow})),
 			page: paginator.page,
 			size: res.length,
-			total: total[0].total,
+			total: pageOffset + res.length,
 		};
 	}
 }
