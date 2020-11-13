@@ -23,7 +23,7 @@ export default async () => {
 	logger.info('Serve db started!');
 	const DBController = container.resolve<ServerDBController>('DBController');
 	await DBController.connect();
-	DBController.$entry.create({content: 'asdasd'}, false);
+	await DBController.$entry.create({content: 'pishula'}, false);
 	const a = await DBController.calc('test');
 	logger.info('test', a);
 };

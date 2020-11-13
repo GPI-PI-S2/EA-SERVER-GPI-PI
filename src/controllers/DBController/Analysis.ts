@@ -15,7 +15,7 @@ export class ServerDBAnalysis implements DBAnalysis {
 	async read(_id: string): Promise<DBAnalysis.Analysis> {
 		return null;
 	}
-	async update(_id: string): Promise<void> {
+	async update(_id: string, entry: DBAnalysis.Input): Promise<void> {
 		return;
 	}
 	async delete(_id): Promise<void> {

@@ -16,7 +16,6 @@ export class ServerDBEntry implements DBEntry {
 		content = content ? content : '';
 		extractor = extractor ? extractor : '';
 		let hash = MD5(content).toString();
-
 		this.logger.info('Adding ', content, ', from ', extractor);
 
 		const res = await this.db.query('SELECT id FROM Entry WHERE hash = ?;', [hash]);
@@ -38,18 +37,26 @@ export class ServerDBEntry implements DBEntry {
 	}
 	async read(_id: string): Promise<DBEntry.Entry> {
 		this.logger.info('Obtaining id: ', _id);
-		const res = await this.db.query('SELECT id, hash, created as created, source, metaKey, content,_deleted FROM Entry WHERE id = ? AND _deleted = 0;', [_id]);
+		const res = await this.db.query('SELECT id, hash, created, source, metaKey, content, _deleted FROM Entry WHERE id = ? AND _deleted = 0;', [_id]);
 
 		if (res.length === 0) {
 			this.logger.error('Empty result for id ', _id);
-			throw(`Empty result for id ${_id}`);
+			throw (`Empty result for id ${_id}`);
 		}
 		const entry = res[0];
-		return ({_entryId: entry.id, ...entry});
+		return ({...entry});
 
 	}
-	async update(_id: string): Promise<void> { // TODO no tengo datos para hacer update
-		return;
+	async update(_id: string, entry: DBEntry.Input): Promise<void> {
+		let {metaKey, content, extractor} = entry;
+		metaKey = metaKey ? metaKey : '';
+		content = content ? content : '';
+		extractor = extractor ? extractor : '';
+		let hash = MD5(content).toString();
+		this.logger.info('Updating ', content, ', from ', extractor, ', id ', _id);
+		await this.db.query('UPDATE Entry SET hash = ?, source = ?, metaKey = ?, content = ? WHERE id = ?;',
+			[hash, extractor, metaKey, content, _id]);
+
 	}
 	async delete(_id): Promise<void> {
 		this.logger.info('Obtaining id: ', _id);
