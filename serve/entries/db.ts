@@ -23,11 +23,11 @@ export default async () => {
 	logger.info('Serve db started!');
 	const DBController = container.resolve<ServerDBController>('DBController');
 	await DBController.connect();
-	const a = await DBController.calc('test');
+	const a = await DBController.calc('kkk');
 	const sents = {
-		"Asertividad": 0,
+		"Asertividad": 0.4,
 		"Autoconciencia Emocional": 0,
-		"Autoestima": 0,
+		"Autoestima": 0.1,
 		"Colaboración y Cooperación": 0,
 		"Comprensión Organizativa": 0.1,
 		"Conciencia Crítica": 0,
@@ -41,17 +41,15 @@ export default async () => {
 		"Optimismo": 0,
 		"Relación Social": 0,
 		"Tolerancia a la frustración": 0,
-		"Violencia": 0,
-		"_entryId": -1,
-		"completionDate": '',
-		"modelVersion": ''
+		"Violencia": 0.9,
+ 		"modelVersion": ''
 	};
 
 	await DBController.insert({
 		extractor: 'Reddit',
 		metaKey: 'kkk',
 		modelVersion: 'v1',
-		result: [({input: {content: 'pico pal ke lee y wea'}, sentiments: sents})]
+		result: [({input: {content: 'frase weona'}, sentiments: sents})]
 	});
 	logger.info('test', a);
 };

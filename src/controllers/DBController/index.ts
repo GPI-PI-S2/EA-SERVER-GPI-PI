@@ -60,7 +60,7 @@ export class ServerDBController implements DBController {
 			+ ' FROM Entry e, Analysis a WHERE a.`_entryId` = e.`_id` AND e.metaKey = ?;';
 
 		const res: Analyzer.sentiments[] = await this.db.query(sentimentsAVGSQL, [metakey]);
-		if (res.length === 0) throw('Empty result set for calc');
+		if (res.length === 0) throw ('Empty result set for calc');
 		return {
 			sentiments: res[0],
 			total: NaN,
@@ -73,7 +73,7 @@ export class ServerDBController implements DBController {
 		const {result, metaKey, extractor, modelVersion} = analysis;
 
 		for (const {input, sentiments} of result) {
-			const _entryId = await this.$entry.create({metaKey: metaKey, extractor: extractor, content: input.content}, false);
+			const _entryId = await this.$entry.create({metaKey, extractor, content: input.content}, false);
 			await this.$analysis.create({...sentiments, ...{_entryId, modelVersion}}, false);
 		}
 

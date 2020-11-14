@@ -13,35 +13,41 @@ export class ServerDBAnalysis implements DBAnalysis {
 	async create(entry: DBAnalysis.Input, force: boolean): Promise<number> {
 		if (entry._entryId === undefined || entry._entryId < 0) throw ('Invalid _entryId');
 
-		const check = await this.db.query('SELECT _id FROM Entry WHERE _id = ?;', [entry._entryId]);
+		const check: {_id: number}[] = await this.db.query('SELECT _id FROM Entry WHERE _id = ?;', [entry._entryId]);
 		if (check.length === 0) throw ('_entryId NOT found on Entry table');
 
-		const checkPrev = await this.db.query('SELECT _id FROM Analysis WHERE _entryId = ?', [entry._entryId]);
+		const checkPrev: {_id: number}[] = await this.db.query('SELECT _id FROM Analysis WHERE _entryId = ?', [entry._entryId]);
 		if (checkPrev.length === 0) {
-			const now = new Date();
-			entry.completionDate = entry.completionDate ? entry.completionDate : `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
-
 			this.logger.info('Adding Analysis for Entry ', entry._entryId);
-			const res = await this.db.query('INSERT INTO Analysis SET ?', entry);
+			const res: {insertId: number} = await this.db.query('INSERT INTO Analysis SET ?', entry);
 			return res.insertId;
 		}
 		else {
+			const existingId = checkPrev[0]._id;
 			if (force) {
-				const res = await this.db.query('UPDATE Entry SET ?;', entry);
-				return res.insertId;
+				await this.db.query('UPDATE Analysis SET ? WHERE id = ?', [entry, entry._entryId]);
+				return existingId;
 			}
-			return checkPrev[0]._id;
+			return existingId;
 
 		}
 	}
 	async read(_id: number): Promise<DBAnalysis.Analysis> {
-		return null;
+		this.logger.info('Obtaining Analysis, _id: ', _id);
+		const res: DBAnalysis.Analysis[] = await this.db.query('SELECT * FROM Analysis WHERE _id = ? AND _deleted = 0;', [_id]);
+		if (res.length === 0) {
+			this.logger.error('Empty result for _id ', _id);
+			throw (`Empty result for reading _id ${_id}`);
+		}
+		return ({...res[0]});
+
 	}
 	async update(_id: number, entry: DBAnalysis.Input): Promise<void> {
-		return;
+		this.logger.info('Updating Analysis, _id ', _id);
+		await this.db.query('UPDATE Analysis SET ? WHERE _id = ?;', [entry, _id]);
 	}
 	async delete(_id): Promise<void> {
-		this.logger.info('Deleting _id: ', _id);
+		this.logger.info('Deleting Analysis, _id: ', _id);
 		await this.db.query('UPDATE Analysis SET _deleted = 1 WHERE _id = ?;', [_id]);
 
 	}

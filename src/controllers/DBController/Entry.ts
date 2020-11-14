@@ -11,64 +11,40 @@ export class ServerDBEntry implements DBEntry {
 	private readonly db: mysql.Pool;
 	private readonly logger = container.resolve<Logger>('logger');
 	async create(entry: DBEntry.Input, force: boolean): Promise<number> {
-		let {metaKey, content, extractor, created} = entry;
-		metaKey = metaKey ? metaKey : '';
-		content = content ? content : '';
-		extractor = extractor ? extractor : '';
-		const now = new Date();
-		created = created? created: `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
-		let hash = MD5(content).toString();
-		this.logger.info('Adding ', content, ', from ', extractor);
-		const res = await this.db.query('SELECT _id FROM Entry WHERE hash = ?;', [hash]);
-		let storedId: number;
-		if (!res.length) {storedId = -1;}
-		else {storedId = res[0]._id;}
+		entry.content = entry.content ? entry.content : '';
+		entry.hash = MD5(entry.content).toString();
 
-		if (storedId === -1) { // no previous entry
-			const res = await this.db.query('INSERT INTO Entry (hash, extractor, metaKey, content, created) VALUES (?, ?, ?, ?, ?);',
-				[hash, extractor, metaKey, content, created]);
+		const checkPrev: {_id: number}[] = await this.db.query('SELECT _id FROM Entry WHERE hash = ?;', [entry.hash]);
+		if (checkPrev.length === 0) {
+			this.logger.info('Adding ', entry.content, ', from ', entry.extractor);
+			const res: {insertId: number} = await this.db.query('INSERT INTO Entry SET ?', entry);
 			return res.insertId;
 		}
 		else {
+			const existingId = checkPrev[0]._id;
 			if (force) {
-				const res = await this.db.query('UPDATE Entry SET hash = ?, extractor = ?, metaKey = ?, content = ?, _deleted = 0 WHERE _id = ?;',
-					[hash, extractor, metaKey, content, storedId]);
-				return res.insertId;
+				await this.db.query('UPDATE Entry SET ? WHERE _id = ?;', [entry, existingId]);
+				return existingId;
 			}
-			return storedId;
+			return existingId;
 		}
 	}
 	async read(_id: number): Promise<DBEntry.Entry> {
-		this.logger.info('Obtaining _id: ', _id);
-		const res = await this.db.query('SELECT _id, hash, created, extractor, metaKey, content, _deleted FROM Entry WHERE _id = ? AND _deleted = 0;', [_id]);
+		this.logger.info('Obtaining Entry, _id: ', _id);
+		const res: DBEntry.Entry[] = await this.db.query('SELECT * FROM Entry WHERE _id = ? AND _deleted = 0;', [_id]);
 		if (res.length === 0) {
 			this.logger.error('Empty result for _id ', _id);
 			throw (`Empty result for reading _id ${_id}`);
 		}
-		const entry = res[0];
-		return ({...entry});
+		return ({...res[0]});
 
 	}
 	async update(_id: number, entry: DBEntry.Input): Promise<void> {
-		let {metaKey, content, extractor} = entry;
-		const res = await this.db.query('SELECT _id, hash, created, extractor, metaKey, content, _deleted FROM Entry WHERE _id = ?;', [_id]);
-		if (res.length === 0) {
-			this.logger.error('Empty result for _id ', _id);
-			throw (`Empty result for updating _id ${_id}`);
-		}
-		const entryDB = res[0];
-
-		metaKey = metaKey ? metaKey : entryDB.metaKey;
-		content = content ? content : entryDB.content;
-		extractor = extractor ? extractor : entryDB.extractor;
-		let hash = MD5(content).toString();
-		this.logger.info('Updating ', content, ', from ', extractor, ', _id ', _id);
-		await this.db.query('UPDATE Entry SET hash = ?, extractor = ?, metaKey = ?, content = ? _deleted = 0 WHERE _id = ?;',
-			[hash, extractor, metaKey, content, _id]);
-
+		this.logger.info('Updating Entry, _id ', _id);
+		await this.db.query('UPDATE Entry SET ? WHERE _id = ?;', [entry, _id]);
 	}
 	async delete(_id: number): Promise<void> {
-		this.logger.info('Deleting _id: ', _id);
+		this.logger.info('Deleting Entry, _id: ', _id);
 		await this.db.query('UPDATE Entry SET _deleted = 1 WHERE _id = ?;', [_id]);
 	}
 	async list(
@@ -93,7 +69,7 @@ export class ServerDBEntry implements DBEntry {
 		const pageSQL = [paginator.size, pageOffset];
 
 		console.log(SQLFilterValues.concat(pageSQL));
-		const res = await this.db.query('SELECT _id, hash, created, extractor, metaKey, content FROM Entry WHERE _deleted = 0'
+		const res: DBEntry.Input[] = await this.db.query('SELECT _id, hash, created, extractor, metaKey, content FROM Entry WHERE _deleted = 0'
 			+ SQLFilterKeys
 			+ ' LIMIT ? OFFSET ?;'
 			, SQLFilterValues.concat(pageSQL));
