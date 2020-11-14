@@ -24,40 +24,32 @@ DROP TABLE IF EXISTS `Analysis`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Analysis` (
   `_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `entry_id` bigint(20) unsigned NOT NULL,
-  `completition_date` date NOT NULL DEFAULT current_timestamp(),
-  `model_version` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `asertividad` decimal(10,0) NOT NULL,
-  `autoconciencia_emocional` decimal(10,0) NOT NULL,
-  `autoestima` decimal(10,0) NOT NULL,
-  `colaboracion_cooperacion` decimal(10,0) NOT NULL,
-  `comprension_organizativa` decimal(10,0) NOT NULL,
-  `conciencia_critica` decimal(10,0) NOT NULL,
-  `desarrollo_relaciones` decimal(10,0) NOT NULL,
-  `empatia` decimal(10,0) NOT NULL,
-  `influencia` decimal(10,0) NOT NULL,
-  `liderazgo` decimal(10,0) NOT NULL,
-  `manejo_conflictos` decimal(10,0) NOT NULL,
-  `motivacion_logros` decimal(10,0) NOT NULL,
-  `optimismo` decimal(10,0) NOT NULL,
-  `percepcion_comprension_emocional` decimal(10,0) NOT NULL,
-  `relacion_social` decimal(10,0) NOT NULL,
-  `tolerancia_frustracion` decimal(10,0) NOT NULL,
-  `violencia` decimal(10,0) NOT NULL,
+  `_entryId` bigint(20) unsigned NOT NULL,
+  `Asertividad` decimal(10,0) NOT NULL,
+  `Autoconciencia Emocional` decimal(10,0) NOT NULL,
+  `Autoestima` decimal(10,0) NOT NULL,
+  `Colaboración y Cooperación` decimal(10,0) NOT NULL,
+  `Comprensión Organizativa` decimal(10,0) NOT NULL,
+  `Conciencia Crítica` decimal(10,0) NOT NULL,
+  `Desarrollo de las relaciones` decimal(10,0) NOT NULL,
+  `Empatía` decimal(10,0) NOT NULL,
+  `Influencia` decimal(10,0) NOT NULL,
+  `Liderazgo` decimal(10,0) NOT NULL,
+  `Manejo de conflictos` decimal(10,0) NOT NULL,
+  `Motivación de logro` decimal(10,0) NOT NULL,
+  `Percepción y comprensión Emocional` decimal(10,0) NOT NULL,
+  `Optimismo` decimal(10,0) NOT NULL,
+  `Relación Social` decimal(10,0) NOT NULL,
+  `Tolerancia a la frustración` decimal(10,0) NOT NULL,
+  `Violencia` decimal(10,0) NOT NULL,
+  `modelVersion` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `_deleted` tinyint(1) NOT NULL DEFAULT 0,
+  `completionDate` date NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`_id`),
-  KEY `Analysis_FK` (`entry_id`),
-  CONSTRAINT `Entry_FK` FOREIGN KEY (`entry_id`) REFERENCES `Entry` (`_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `Analysis_FK` (`_entryId`),
+  CONSTRAINT `Entry_FK` FOREIGN KEY (`_entryId`) REFERENCES `Entry` (`_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `Analysis`
---
-
-LOCK TABLES `Analysis` WRITE;
-/*!40000 ALTER TABLE `Analysis` DISABLE KEYS */;
-/*!40000 ALTER TABLE `Analysis` ENABLE KEYS */;
-UNLOCK TABLES;
 
 --
 -- Table structure for table `Entry`
@@ -80,15 +72,6 @@ CREATE TABLE `Entry` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `Entry`
---
-
-LOCK TABLES `Entry` WRITE;
-/*!40000 ALTER TABLE `Entry` DISABLE KEYS */;
-/*!40000 ALTER TABLE `Entry` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Dumping routines for database 'GPIPI'
 --
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -101,4 +84,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-11-13 15:29:52
+-- Dump completed on 2020-11-14  1:07:05

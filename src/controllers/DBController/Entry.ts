@@ -11,10 +11,12 @@ export class ServerDBEntry implements DBEntry {
 	private readonly db: mysql.Pool;
 	private readonly logger = container.resolve<Logger>('logger');
 	async create(entry: DBEntry.Input, force: boolean): Promise<void> {
-		let {metaKey, content, extractor} = entry;
+		let {metaKey, content, extractor, created} = entry;
 		metaKey = metaKey ? metaKey : '';
 		content = content ? content : '';
 		extractor = extractor ? extractor : '';
+		const now = new Date();
+		created = created? created: `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
 		let hash = MD5(content).toString();
 		this.logger.info('Adding ', content, ', from ', extractor);
 		const res = await this.db.query('SELECT _id FROM Entry WHERE hash = ?;', [hash]);
@@ -23,8 +25,8 @@ export class ServerDBEntry implements DBEntry {
 		else {storedId = res[0].id;}
 
 		if (storedId === -1) { // no previous entry
-			await this.db.query('INSERT INTO Entry (hash, extractor, metaKey, content) VALUES (?, ?, ?, ?);',
-				[hash, extractor, metaKey, content]);
+			await this.db.query('INSERT INTO Entry (hash, extractor, metaKey, content, created) VALUES (?, ?, ?, ?, ?);',
+				[hash, extractor, metaKey, content, created]);
 		}
 		else {
 			if (force) {
@@ -82,10 +84,10 @@ export class ServerDBEntry implements DBEntry {
 			.filter(({value}) => value); // seleccionar filtros thruthy
 
 		const SQLFilterKeys = ((filterArray.length === 0) ? '' : ' AND ') + filterArray.map(({key}) => key).join(' AND ');
-		const SQLFilterValues = filterArray.map(({value}) => value);
+		const SQLFilterValues: (number | string)[] = filterArray.map(({value}) => value);
 
 		const pageOffset = paginator.page * paginator.size;
-		const pageSQL: any[] = [paginator.size, pageOffset];
+		const pageSQL = [paginator.size, pageOffset];
 
 		console.log(SQLFilterValues.concat(pageSQL));
 		const res = await this.db.query('SELECT _id, hash, created, extractor, metaKey, content FROM Entry WHERE _deleted = 0'
