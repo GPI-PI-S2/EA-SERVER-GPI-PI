@@ -25,29 +25,28 @@ DROP TABLE IF EXISTS `Analysis`;
 CREATE TABLE `Analysis` (
   `_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `_entryId` bigint(20) unsigned NOT NULL,
-  `Asertividad` decimal(10,0) NOT NULL,
-  `Autoconciencia Emocional` decimal(10,0) NOT NULL,
-  `Autoestima` decimal(10,0) NOT NULL,
-  `Colaboración y Cooperación` decimal(10,0) NOT NULL,
-  `Comprensión Organizativa` decimal(10,0) NOT NULL,
-  `Conciencia Crítica` decimal(10,0) NOT NULL,
-  `Desarrollo de las relaciones` decimal(10,0) NOT NULL,
-  `Empatía` decimal(10,0) NOT NULL,
-  `Influencia` decimal(10,0) NOT NULL,
-  `Liderazgo` decimal(10,0) NOT NULL,
-  `Manejo de conflictos` decimal(10,0) NOT NULL,
-  `Motivación de logro` decimal(10,0) NOT NULL,
-  `Percepción y comprensión Emocional` decimal(10,0) NOT NULL,
-  `Optimismo` decimal(10,0) NOT NULL,
-  `Relación Social` decimal(10,0) NOT NULL,
-  `Tolerancia a la frustración` decimal(10,0) NOT NULL,
-  `Violencia` decimal(10,0) NOT NULL,
-  `modelVersion` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Asertividad` decimal(5,4) NOT NULL DEFAULT 0.0000,
+  `Autoconciencia Emocional` decimal(5,4) NOT NULL DEFAULT 0.0000,
+  `Autoestima` decimal(5,4) NOT NULL DEFAULT 0.0000,
+  `Colaboración y Cooperación` decimal(5,4) NOT NULL DEFAULT 0.0000,
+  `Comprensión Organizativa` decimal(5,4) NOT NULL DEFAULT 0.0000,
+  `Conciencia Crítica` decimal(5,4) NOT NULL DEFAULT 0.0000,
+  `Desarrollo de las relaciones` decimal(5,4) NOT NULL DEFAULT 0.0000,
+  `Empatía` decimal(5,4) NOT NULL DEFAULT 0.0000,
+  `Influencia` decimal(5,4) NOT NULL DEFAULT 0.0000,
+  `Liderazgo` decimal(5,4) NOT NULL DEFAULT 0.0000,
+  `Manejo de conflictos` decimal(5,4) NOT NULL DEFAULT 0.0000,
+  `Motivación de logro` decimal(5,4) NOT NULL DEFAULT 0.0000,
+  `Percepción y comprensión Emocional` decimal(5,4) NOT NULL,
+  `Optimismo` decimal(5,4) NOT NULL DEFAULT 0.0000,
+  `Relación Social` decimal(5,4) NOT NULL DEFAULT 0.0000,
+  `Tolerancia a la frustración` decimal(5,4) NOT NULL DEFAULT 0.0000,
+  `Violencia` decimal(5,4) NOT NULL DEFAULT 0.0000,
+  `modelVersion` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0',
   `_deleted` tinyint(1) NOT NULL DEFAULT 0,
   `completionDate` date NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`_id`),
-  KEY `Analysis_FK` (`_entryId`),
-  CONSTRAINT `Entry_FK` FOREIGN KEY (`_entryId`) REFERENCES `Entry` (`_id`) ON DELETE CASCADE ON UPDATE CASCADE
+  KEY `Analysis_FK` (`_entryId`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -67,7 +66,8 @@ CREATE TABLE `Entry` (
   `content` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
   `_deleted` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`_id`),
-  KEY `Entry_hash_IDX` (`hash`,`extractor`,`metaKey`) USING BTREE
+  KEY `Entry_hash_IDX` (`hash`) USING BTREE,
+  KEY `Entry_metaKey_IDX` (`metaKey`) USING BTREE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -84,4 +84,4 @@ CREATE TABLE `Entry` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-11-14  1:07:05
+-- Dump completed on 2020-11-14 13:13:30

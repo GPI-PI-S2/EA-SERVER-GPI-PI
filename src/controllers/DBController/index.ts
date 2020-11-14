@@ -35,6 +35,7 @@ export class ServerDBController implements DBController {
 	$entry: DBEntry;
 	$analysis: DBAnalysis;
 	async calc(metakey: string): Promise<DBController.calcResult> {
+
 		const sentiments: Analyzer.sentiments = {
 			Asertividad: NaN,
 			'Autoconciencia Emocional': NaN,
@@ -54,8 +55,14 @@ export class ServerDBController implements DBController {
 			'Tolerancia a la frustración': NaN,
 			Violencia: NaN,
 		};
+		const sentimentsAVGSQL = 'SELECT '
+			+ Object.keys(sentiments).map(sentiment => `AVG(a.\`${sentiment}\`) as \`${sentiment}\``).join(', ')
+			+ ' FROM Entry e, Analysis a WHERE a.`_entryId` = e.`_id` AND e.metaKey = ?;';
+
+		const res: Analyzer.sentiments[] = await this.db.query(sentimentsAVGSQL, [metakey]);
+		if (res.length === 0) throw('Empty result set for calc');
 		return {
-			sentiments,
+			sentiments: res[0],
 			total: NaN,
 		};
 	}
@@ -63,6 +70,13 @@ export class ServerDBController implements DBController {
 		return {};
 	}
 	async insert(analysis: Analyzer.Analysis): Promise<void> {
+		const {result, metaKey, extractor, modelVersion} = analysis;
+
+		for (const {input, sentiments} of result) {
+			const _entryId = await this.$entry.create({metaKey: metaKey, extractor: extractor, content: input.content}, false);
+			await this.$analysis.create({...sentiments, ...{_entryId, modelVersion}}, false);
+		}
+
 		return;
 	}
 	async bulkDB(dbPath: string): Promise<DBController.bulkDBResult> {

@@ -10,40 +10,29 @@ export class ServerDBAnalysis implements DBAnalysis {
 	}
 	private readonly db: mysql.Pool;
 	private readonly logger = container.resolve<Logger>('logger');
-	private readonly defaultEntry: Required<DBAnalysis.Input> = {
-		"Asertividad": 0,
-		"Autoconciencia Emocional": 0,
-		"Autoestima": 0,
-		"Colaboración y Cooperación": 0,
-		"Comprensión Organizativa": 0,
-		"Conciencia Crítica": 0,
-		"Desarrollo de las relaciones": 0,
-		"Empatía": 0,
-		"Influencia": 0,
-		"Liderazgo": 0,
-		"Manejo de conflictos": 0,
-		"Motivación de logro": 0,
-		"Percepción y comprensión Emocional": 0,
-		"Optimismo": 0,
-		"Relación Social": 0,
-		"Tolerancia a la frustración": 0,
-		"Violencia": 0,
-		"_entryId": -1,
-		"completionDate": '',
-		"modelVersion": ''
-	}
-	async create(e: DBAnalysis.Input): Promise<void> {
-		let entry: Required<DBAnalysis.Input> = {...this.defaultEntry, ...e};
-		const now = new Date();
-		entry.completionDate = entry.completionDate ? entry.completionDate : `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
-		const sentiments = Object.entries(entry).filter(([key, _]) => key !== '_entryId');
-		const sentimentsSQL = 'INSERT INTO Analysis SET '
-			+ sentiments.map(([key, _]) => `\`${key}\` = ?`).join(', ')
-			+ ', _entryId = (SELECT _id FROM Entry WHERE _id = ? AND _deleted = 0)';
+	async create(entry: DBAnalysis.Input, force: boolean): Promise<number> {
+		if (entry._entryId === undefined || entry._entryId < 0) throw ('Invalid _entryId');
 
-		const sentimentsValues = sentiments.map(([_, value]) => value);
-		this.logger.info('Adding Analysis for Entry ', entry._entryId);
-		await this.db.query(sentimentsSQL, sentimentsValues.concat(entry._entryId));
+		const check = await this.db.query('SELECT _id FROM Entry WHERE _id = ?;', [entry._entryId]);
+		if (check.length === 0) throw ('_entryId NOT found on Entry table');
+
+		const checkPrev = await this.db.query('SELECT _id FROM Analysis WHERE _entryId = ?', [entry._entryId]);
+		if (checkPrev.length === 0) {
+			const now = new Date();
+			entry.completionDate = entry.completionDate ? entry.completionDate : `${now.getFullYear()}-${now.getMonth()}-${now.getDate()}`;
+
+			this.logger.info('Adding Analysis for Entry ', entry._entryId);
+			const res = await this.db.query('INSERT INTO Analysis SET ?', entry);
+			return res.insertId;
+		}
+		else {
+			if (force) {
+				const res = await this.db.query('UPDATE Entry SET ?;', entry);
+				return res.insertId;
+			}
+			return checkPrev[0]._id;
+
+		}
 	}
 	async read(_id: number): Promise<DBAnalysis.Analysis> {
 		return null;
@@ -52,6 +41,8 @@ export class ServerDBAnalysis implements DBAnalysis {
 		return;
 	}
 	async delete(_id): Promise<void> {
-		return;
+		this.logger.info('Deleting _id: ', _id);
+		await this.db.query('UPDATE Analysis SET _deleted = 1 WHERE _id = ?;', [_id]);
+
 	}
 }

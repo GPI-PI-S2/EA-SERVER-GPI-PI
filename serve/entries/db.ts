@@ -24,5 +24,34 @@ export default async () => {
 	const DBController = container.resolve<ServerDBController>('DBController');
 	await DBController.connect();
 	const a = await DBController.calc('test');
+	const sents = {
+		"Asertividad": 0,
+		"Autoconciencia Emocional": 0,
+		"Autoestima": 0,
+		"Colaboración y Cooperación": 0,
+		"Comprensión Organizativa": 0.1,
+		"Conciencia Crítica": 0,
+		"Desarrollo de las relaciones": 0,
+		"Empatía": 0.6,
+		"Influencia": 0.3,
+		"Liderazgo": 0,
+		"Manejo de conflictos": 0,
+		"Motivación de logro": 0,
+		"Percepción y comprensión Emocional": 0,
+		"Optimismo": 0,
+		"Relación Social": 0,
+		"Tolerancia a la frustración": 0,
+		"Violencia": 0,
+		"_entryId": -1,
+		"completionDate": '',
+		"modelVersion": ''
+	};
+
+	await DBController.insert({
+		extractor: 'Reddit',
+		metaKey: 'kkk',
+		modelVersion: 'v1',
+		result: [({input: {content: 'pico pal ke lee y wea'}, sentiments: sents})]
+	});
 	logger.info('test', a);
 };

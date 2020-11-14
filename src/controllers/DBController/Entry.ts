@@ -10,7 +10,7 @@ export class ServerDBEntry implements DBEntry {
 	}
 	private readonly db: mysql.Pool;
 	private readonly logger = container.resolve<Logger>('logger');
-	async create(entry: DBEntry.Input, force: boolean): Promise<void> {
+	async create(entry: DBEntry.Input, force: boolean): Promise<number> {
 		let {metaKey, content, extractor, created} = entry;
 		metaKey = metaKey ? metaKey : '';
 		content = content ? content : '';
@@ -22,17 +22,20 @@ export class ServerDBEntry implements DBEntry {
 		const res = await this.db.query('SELECT _id FROM Entry WHERE hash = ?;', [hash]);
 		let storedId: number;
 		if (!res.length) {storedId = -1;}
-		else {storedId = res[0].id;}
+		else {storedId = res[0]._id;}
 
 		if (storedId === -1) { // no previous entry
-			await this.db.query('INSERT INTO Entry (hash, extractor, metaKey, content, created) VALUES (?, ?, ?, ?, ?);',
+			const res = await this.db.query('INSERT INTO Entry (hash, extractor, metaKey, content, created) VALUES (?, ?, ?, ?, ?);',
 				[hash, extractor, metaKey, content, created]);
+			return res.insertId;
 		}
 		else {
 			if (force) {
-				await this.db.query('UPDATE Entry SET hash = ?, extractor = ?, metaKey = ?, content = ?, _deleted = 0 WHERE _id = ?;',
+				const res = await this.db.query('UPDATE Entry SET hash = ?, extractor = ?, metaKey = ?, content = ?, _deleted = 0 WHERE _id = ?;',
 					[hash, extractor, metaKey, content, storedId]);
+				return res.insertId;
 			}
+			return storedId;
 		}
 	}
 	async read(_id: number): Promise<DBEntry.Entry> {
@@ -65,7 +68,7 @@ export class ServerDBEntry implements DBEntry {
 
 	}
 	async delete(_id: number): Promise<void> {
-		this.logger.info('Obtaining _id: ', _id);
+		this.logger.info('Deleting _id: ', _id);
 		await this.db.query('UPDATE Entry SET _deleted = 1 WHERE _id = ?;', [_id]);
 	}
 	async list(
