@@ -7,7 +7,7 @@
 		"lint": "eslint . --ext .ts",
 		"start": "nodemon",
 		"build": "tsc --project ./",
-		"serve-db": "tsnd --respawn ./serve",
+		"serve-db": "npm run lint && tsnd --respawn ./serve",
 		"git-update-local": "git remote update origin --prune"
 	},
 	"repository": {
@@ -21,6 +21,7 @@
 	},
 	"homepage": "https://github.com/GPI-PI-S2/EA-SERVER-GPI-PI#readme",
 	"dependencies": {
+		"@types/crypto-js": "^4.0.1",
 		"@types/mysql": "^2.15.15",
 		"body-parser": "^1.19.0",
 		"celebrate": "^13.0.4",
@@ -28,7 +29,7 @@
 		"crypto-js": "^4.0.0",
 		"dotenv": "^8.2.0",
 		"ea-common-gpi-pi": "github:GPI-PI-S2/EA-COMMON-GPI-PI",
-		"ea-core-gpi-pi": "github:GPI-PI-S2/EA-CORE-GPI-PI",
+		"ea-core-gpi-pi": "file:../EA-CORE-GPI-PI",
 		"express": "^4.17.1",
 		"mysql": "^2.18.1",
 		"promise-mysql": "^4.1.3",

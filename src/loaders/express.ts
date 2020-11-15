@@ -52,6 +52,7 @@ export default ({ app }: { app: express.Application }): void => {
 		}
 		return next(err);
 	});
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	app.use((err, req, res, next) => {
 		res.status(err.status || 500);
 		res.json({
