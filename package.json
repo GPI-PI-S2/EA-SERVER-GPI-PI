@@ -29,7 +29,7 @@
 		"crypto-js": "^4.0.0",
 		"dotenv": "^8.2.0",
 		"ea-common-gpi-pi": "github:GPI-PI-S2/EA-COMMON-GPI-PI",
-		"ea-core-gpi-pi": "file:../EA-CORE-GPI-PI",
+		"ea-core-gpi-pi": "github:GPI-PI-S2/EA-CORE-GPI-PI",
 		"express": "^4.17.1",
 		"mysql": "^2.18.1",
 		"promise-mysql": "^4.1.3",
