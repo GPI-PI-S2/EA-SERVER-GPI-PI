@@ -81,10 +81,7 @@ export class ServerDBController implements DBController {
 			const _entryId = (
 				await this.$entry.create({ metaKey, extractor, content: input.content }, false)
 			)._id;
-			await this.$analysis.create(
-				{ ...sentiments, ...{ _entryId, modelVersion, completionDate: 'asd' } },
-				false,
-			);
+			await this.$analysis.create({ ...sentiments, ...{ _entryId, modelVersion } }, false);
 		}
 
 		return;
