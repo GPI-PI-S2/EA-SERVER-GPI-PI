@@ -24,8 +24,7 @@ export class ServerDBAnalysis implements DBAnalysis {
 			_id: DBController.id;
 		}[] = await this.db.query('SELECT _id FROM Analysis WHERE _entryId = ?', [entry._entryId]);
 		if (checkPrev.length === 0) {
-			this.logger.info('Adding Analysis for Entry ', entry._entryId);
-			const res: { insertId: number } = await this.db.query(
+			const res: { insertId: DBController.id } = await this.db.query(
 				'INSERT INTO Analysis SET ?',
 				entry,
 			);
@@ -42,7 +41,6 @@ export class ServerDBAnalysis implements DBAnalysis {
 		}
 	}
 	async read(_id: DBController.id): Promise<DBAnalysis.Analysis> {
-		this.logger.info('Obtaining Analysis, _id: ', _id);
 		const res: DBAnalysis.Analysis[] = await this.db.query(
 			'SELECT * FROM Analysis WHERE _id = ? AND _deleted = 0;',
 			[_id],
