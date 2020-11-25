@@ -17,7 +17,6 @@ export class ServerDBEntry implements DBEntry {
 			_id: DBController.id;
 		}[] = await this.db.query('SELECT _id FROM Entry WHERE hash = ?;', [entry.hash]);
 		if (checkPrev.length === 0) {
-			this.logger.silly('Adding ', entry.content, ', from ', entry.extractor);
 			const res: { insertId: number } = await this.db.query('INSERT INTO Entry SET ?', entry);
 			return { _id: res.insertId };
 		} else {
@@ -32,7 +31,6 @@ export class ServerDBEntry implements DBEntry {
 		}
 	}
 	async read(_id: DBController.id): Promise<DBEntry.Entry> {
-		this.logger.silly('Obtaining Entry, _id: ', _id);
 		const res: DBEntry.Entry[] = await this.db.query(
 			'SELECT * FROM Entry WHERE _id = ? AND _deleted = 0;',
 			[_id],
@@ -44,11 +42,11 @@ export class ServerDBEntry implements DBEntry {
 		return { ...res[0] };
 	}
 	async update(_id: DBController.id, entry: DBEntry.Input): Promise<void> {
-		this.logger.silly('Updating Entry, _id ', _id);
+		this.logger.info('Updating Entry, _id ', _id);
 		await this.db.query('UPDATE Entry SET ? WHERE _id = ?;', [entry, _id]);
 	}
 	async delete(_id: DBController.id): Promise<void> {
-		this.logger.silly('Deleting Entry, _id: ', _id);
+		this.logger.info('Deleting Entry, _id: ', _id);
 		await this.db.query('UPDATE Entry SET _deleted = 1 WHERE _id = ?;', [_id]);
 	}
 	async list(
@@ -81,19 +79,20 @@ export class ServerDBEntry implements DBEntry {
 
 		const pageOffset = paginator.page * paginator.size;
 		const pageSQL = [paginator.size, pageOffset];
-		this.logger.silly(SQLFilterValues.concat(pageSQL));
+
 		const res: DBEntry.Input[] = await this.db.query(
 			'SELECT _id, hash, created, extractor, metaKey, content FROM Entry WHERE _deleted = 0' +
 				SQLFilterKeys +
 				' LIMIT ? OFFSET ?;',
 			SQLFilterValues.concat(pageSQL),
 		);
+		const total: { total: number }[] = await this.db.query('SELECT COUNT(_id) from Entry');
 
 		return {
 			list: res.map((dataRow: DBEntry.Entry) => ({ ...dataRow })),
 			page: paginator.page,
 			size: res.length,
-			total: pageOffset + res.length,
+			total: total[0].total,
 		};
 	}
 }

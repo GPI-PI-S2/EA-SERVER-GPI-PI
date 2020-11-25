@@ -49,6 +49,6 @@ export default async () => {
 		extractor: 'Reddit',
 		metaKey: 'kkk',
 		modelVersion: 'v1',
-		result: [{ input: { content: 'frase weona' }, sentiments: sents }],
+		result: [{ input: { content: 'frase weona tres' }, sentiments: sents }],
 	});
 };
