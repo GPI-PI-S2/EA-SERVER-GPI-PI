@@ -51,5 +51,4 @@ export default async () => {
 		modelVersion: 'v1',
 		result: [{ input: { content: 'frase weona tres' }, sentiments: sents }],
 	});
-	logger.info('test', a);
 };
