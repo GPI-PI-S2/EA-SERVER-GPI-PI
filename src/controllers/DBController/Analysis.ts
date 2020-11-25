@@ -34,7 +34,7 @@ export class ServerDBAnalysis implements DBAnalysis {
 			// Indica si realmente fue reemplazado la entry
 			let replaced = false;
 			if (force) {
-				await this.db.query('UPDATE Analysis SET ? WHERE id = ?', [entry, entry._entryId]);
+				await this.db.query('UPDATE Analysis SET ? WHERE _id = ?', [entry, entry._entryId]);
 				replaced = true;
 			}
 			return { _id: existingId, replaced };
