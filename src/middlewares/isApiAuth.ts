@@ -1,7 +1,7 @@
 import { RequestHandler } from 'express';
 import { API_KEY } from '../config';
 
-export const isAuth: RequestHandler = async (req, res, next) => {
+export const isApiAuth: RequestHandler = async (req, res, next) => {
 	const apiKey = req.headers['x-api-key'];
 	if (!apiKey) {
 		return res

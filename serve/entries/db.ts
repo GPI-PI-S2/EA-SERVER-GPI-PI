@@ -1,5 +1,3 @@
-import { container } from 'tsyringe';
-import { ServerDBController } from '../../src/controllers/DBController';
 /*
 LOGS LEVELS de mayor a menor importancia
 error: 0,
@@ -18,12 +16,13 @@ ejemplos:
 logger.info("mensaje");
 logger.debug("mensaje",{var:123})
 */
+import { DBController } from 'ea-core-gpi-pi';
+import { container } from 'tsyringe';
 import logger from '../../src/loaders/logger';
 export default async () => {
 	logger.info('Serve db started!');
-	const DBController = container.resolve<ServerDBController>('DBController');
+	const DBController = container.resolve<DBController>('DBController');
 	await DBController.connect();
-	const a = await DBController.calc('kkk');
 	const sents = {
 		Asertividad: 0.4,
 		'Autoconciencia Emocional': 0,
@@ -45,10 +44,13 @@ export default async () => {
 		modelVersion: '',
 	};
 
-	await DBController.insert({
-		extractor: 'Reddit',
-		metaKey: 'kkk',
-		modelVersion: 'v1',
-		result: [{ input: { content: 'frase weona tres' }, sentiments: sents }],
-	});
+	await DBController.insert(
+		{
+			extractor: 'Reddit',
+			metaKey: 'kkk',
+			modelVersion: 'v1',
+			result: [{ input: { content: 'frase weona tres' }, sentiments: sents }],
+		},
+		false,
+	);
 };

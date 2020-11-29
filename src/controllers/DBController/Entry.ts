@@ -11,6 +11,7 @@ export class ServerDBEntry implements DBEntry {
 		entry: DBEntry.Input,
 		force: boolean,
 	): Promise<{ _id: DBController.id; replaced?: boolean }> {
+		if (!this.db) throw new Error('no db instance');
 		entry.content = entry.content ? entry.content : '';
 		entry.hash = MD5(entry.content).toString();
 		const checkPrev: {
@@ -31,6 +32,7 @@ export class ServerDBEntry implements DBEntry {
 		}
 	}
 	async read(_id: DBController.id): Promise<DBEntry.Entry> {
+		if (!this.db) throw new Error('no db instance');
 		const res: DBEntry.Entry[] = await this.db.query(
 			'SELECT * FROM Entry WHERE _id = ? AND _deleted = 0;',
 			[_id],
@@ -42,10 +44,12 @@ export class ServerDBEntry implements DBEntry {
 		return { ...res[0] };
 	}
 	async update(_id: DBController.id, entry: DBEntry.Input): Promise<void> {
+		if (!this.db) throw new Error('no db instance');
 		this.logger.info('Updating Entry, _id ', _id);
 		await this.db.query('UPDATE Entry SET ? WHERE _id = ?;', [entry, _id]);
 	}
 	async delete(_id: DBController.id): Promise<void> {
+		if (!this.db) throw new Error('no db instance');
 		this.logger.info('Deleting Entry, _id: ', _id);
 		await this.db.query('UPDATE Entry SET _deleted = 1 WHERE _id = ?;', [_id]);
 	}
@@ -53,6 +57,7 @@ export class ServerDBEntry implements DBEntry {
 		paginator: DBController.Paginator,
 		filter: DBEntry.Filter = {},
 	): Promise<DBController.PaggedList<DBEntry.Entry>> {
+		if (!this.db) throw new Error('no db instance');
 		// ojo, los filtros pueden llegar indefinidos
 		const { created, extractor, metaKey } = filter;
 		const filterArray = [

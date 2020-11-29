@@ -16,6 +16,12 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+-- Base de datos: `GPIPI`
+--
+CREATE DATABASE IF NOT EXISTS `GPIPI` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
+USE GPIPI;
+
+--
 -- Table structure for table `Analysis`
 --
 

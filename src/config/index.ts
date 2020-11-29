@@ -20,6 +20,7 @@ export const API_ENDPOINT = process.env.API_ENDPOINT ? process.env.API_ENDPOINT 
 export const API_VERSION = process.env.API_VERSION ? process.env.API_VERSION : '/v1';
 export const API_APP = process.env.API_APP;
 export const API_KEY = process.env.API_KEY;
+export const API_SECRET = process.env.API_SECRET;
 
 export const DBCONTROLLER_ENDPOINT = process.env.DBCONTROLLER_ENDPOINT
 	? process.env.DBCONTROLLER_ENDPOINT
@@ -29,17 +30,13 @@ export const DBCONTROLLER_VERSION = process.env.DBCONTROLLER_VERSION
 	: '/v1';
 export const DBCONTROLLER_APP = process.env.DBCONTROLLER_APP;
 export const DBCONTROLLER_KEY = process.env.DBCONTROLLER_KEY;
-export const DBCONTROLLER_HOST = process.env.DBCONTROLLER_HOST
-	? process.env.DBCONTROLLER_HOST
-	: '127.0.0.1';
-export const DBCONTROLLER_USER = process.env.DBCONTROLLER_USER
-	? process.env.DBCONTROLLER_USER
-	: '';
-export const DBCONTROLLER_PASSWORD = process.env.DBCONTROLLER_PASSWORD
-	? process.env.DBCONTROLLER_PASSWORD
-	: '';
-export const DBCONTROLLER_DBNAME = process.env.DBCONTROLLER_DBNAME
-	? process.env.DBCONTROLLER_DBNAME
-	: '';
+
+// DB
+export const DB_ADDRESS = process.env.DB_ADDRESS ? process.env.DB_ADDRESS : '127.0.0.1';
+export const DB_PORT = process.env.DB_PORT ? parseInt(process.env.DB_PORT) : 3306;
+export const DB_LIMIT = process.env.DB_LIMIT ? parseInt(process.env.DB_LIMIT) : 20;
+export const DB_USER = process.env.DB_USER ? process.env.DB_USER : '';
+export const DB_PASS = process.env.DB_PASS ? process.env.DB_PASS : '';
+export const DB_NAME = process.env.DB_NAME ? process.env.DB_NAME : '';
 
 export const SITE_ENDPOINT = process.env.SITE_ENDPOINT ? process.env.SITE_ENDPOINT : '/';

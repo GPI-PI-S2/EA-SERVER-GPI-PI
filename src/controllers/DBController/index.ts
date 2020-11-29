@@ -1,15 +1,10 @@
 import { Analyzer, DBAnalysis, DBController, DBEntry } from 'ea-core-gpi-pi';
 import mysql from 'promise-mysql';
-import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
+import sqlite3 from 'sqlite3';
 import { container } from 'tsyringe';
 import { Logger } from 'winston';
-import {
-	DBCONTROLLER_DBNAME,
-	DBCONTROLLER_HOST,
-	DBCONTROLLER_PASSWORD,
-	DBCONTROLLER_USER,
-} from '../../config';
+import { DB_ADDRESS, DB_LIMIT, DB_NAME, DB_PASS, DB_PORT, DB_USER } from '../../config';
 import { ServerDBAnalysis } from './Analysis';
 import { ServerDBEntry } from './Entry';
 
@@ -23,29 +18,6 @@ export class ServerDBController implements DBController {
 				 Cambiar el tipo unknown de la variable DB por el correspondiente
 				*/
 	}
-	async connect(): Promise<void> {
-		const connectionPool = mysql.createPool({
-			connectionLimit: 20,
-			host: DBCONTROLLER_HOST,
-			user: DBCONTROLLER_USER,
-			password: DBCONTROLLER_PASSWORD,
-			database: DBCONTROLLER_DBNAME,
-		});
-		this.db = await connectionPool;
-		this.$entry = new ServerDBEntry(this.db);
-		this.$analysis = new ServerDBAnalysis(this.db);
-	}
-	private db: mysql.Pool;
-	private readonly logger = container.resolve<Logger>('logger');
-	$entry: DBEntry;
-	$analysis: DBAnalysis;
-	private readonly entry: DBEntry.Input = {
-		hash: null,
-		created: null,
-		extractor: null,
-		metaKey: null,
-		content: null,
-	};
 	private readonly sentiments: Analyzer.sentiments = {
 		Asertividad: NaN,
 		'Autoconciencia Emocional': NaN,
@@ -65,7 +37,35 @@ export class ServerDBController implements DBController {
 		'Tolerancia a la frustración': NaN,
 		Violencia: NaN,
 	};
+	private db: mysql.Pool;
+	private readonly logger = container.resolve<Logger>('logger');
+	private readonly entry: DBEntry.Input = {
+		hash: null,
+		created: null,
+		extractor: null,
+		metaKey: null,
+		content: null,
+	};
+	$entry: DBEntry;
+	$analysis: DBAnalysis;
+	async connect(): Promise<void> {
+		const connectionPool = mysql.createPool({
+			connectionLimit: DB_LIMIT,
+			host: DB_ADDRESS,
+			port: DB_PORT,
+			user: DB_USER,
+			password: DB_PASS,
+			database: DB_NAME,
+		});
+		this.db = await connectionPool;
+		this.$entry = new ServerDBEntry(this.db);
+		this.$analysis = new ServerDBAnalysis(this.db);
+	}
+	async disconnect(): Promise<void> {
+		return;
+	}
 	async calc(metakey: string): Promise<DBController.calcResult> {
+		if (!this.db) throw new Error('no db instance');
 		const sentimentsAVGSQL =
 			'SELECT ' +
 			Object.keys(this.sentiments)
@@ -85,22 +85,21 @@ export class ServerDBController implements DBController {
 		};
 	}
 	async stats(): Promise<{ [key: string]: number }> {
+		if (!this.db) throw new Error('no db instance');
 		// cuantos reg hay por cada extractor
-		const res: {
-			total: number;
-			metaKey: DBEntry.Entry['metaKey'];
-		}[] = await this.db.query(
-			'SELECT COUNT(_id) as `total`, metaKey  FROM Entry GROUP BY metaKey',
+		const res: { total: number; extractor: DBEntry.Entry['extractor'] }[] = await this.db.query(
+			'SELECT COUNT(_id) as `total`, extractor  FROM Entry GROUP BY extractor',
 		);
 		return res.reduce(
-			(stats, { total, metaKey }) => ({
+			(stats, { total, extractor }) => ({
 				...stats,
-				[metaKey]: total,
+				[extractor]: total,
 			}),
 			{},
 		);
 	}
 	async insert(analysis: Analyzer.Analysis): Promise<void> {
+		if (!this.db) throw new Error('no db instance');
 		// prioritaria
 		const { result, metaKey, extractor, modelVersion } = analysis;
 
@@ -120,6 +119,7 @@ export class ServerDBController implements DBController {
 		return;
 	}
 	async entryExists(hash: DBEntry.Entry['hash']): Promise<boolean> {
+		if (!this.db) throw new Error('no db instance');
 		const res: DBController.id[] = await this.db.query(
 			'SELECT _id FROM Entry WHERE hash = ?;',
 			[hash],
