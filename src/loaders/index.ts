@@ -4,6 +4,6 @@ import expressLoader from './express';
 import Logger from './logger';
 export default async ({ app }: { app: Express }): Promise<void> => {
 	dependencyInjectorLoader();
-	expressLoader({ app });
+	await expressLoader({ app });
 	Logger.info('✌️ Express loaded');
 };
