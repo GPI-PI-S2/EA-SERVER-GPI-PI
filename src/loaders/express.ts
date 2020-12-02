@@ -74,7 +74,7 @@ export default async ({ app }: { app: express.Application }): Promise<void> => {
 				.status(400)
 				.send({
 					type: 'TYPE_ERROR',
-					message: 'Erro de tipeo',
+					message: 'Error de tipeo',
 					data: { body: body.slice(0, -2) },
 				})
 				.end();
@@ -87,7 +87,7 @@ export default async ({ app }: { app: express.Application }): Promise<void> => {
 		res.json({
 			errors: {
 				type: 'INTERNAL_ERROR',
-				message: 'Erro desconocido',
+				message: 'Error desconocido',
 				data: err,
 			},
 		});
