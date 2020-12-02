@@ -43,6 +43,11 @@ export default async () => {
 		Violencia: 0.9,
 		modelVersion: '',
 	};
+	await DBController.$entry.create(
+		{ extractor: 'mis weas', metaKey: 'meta', content: 'pyco y zorra' },
+		true,
+	);
+	return;
 
 	await DBController.insert(
 		{

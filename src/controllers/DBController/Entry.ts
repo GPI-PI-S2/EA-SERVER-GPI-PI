@@ -14,21 +14,22 @@ export class ServerDBEntry implements DBEntry {
 		if (!this.db) throw new Error('no db instance');
 		entry.content = entry.content ? entry.content : '';
 		entry.hash = MD5(entry.content).toString();
-		const checkPrev: {
-			_id: DBController.id;
-		}[] = await this.db.query('SELECT _id FROM Entry WHERE hash = ?;', [entry.hash]);
-		if (checkPrev.length === 0) {
+		try {
 			const res: { insertId: number } = await this.db.query('INSERT INTO Entry SET ?', entry);
 			return { _id: res.insertId };
-		} else {
-			const existingId = checkPrev[0]._id;
-			// Indica si realmente fue reemplazado la entry
-			let replaced = false;
-			if (force) {
-				await this.db.query('UPDATE Entry SET ? WHERE _id = ?;', [entry, existingId]);
-				replaced = true;
+		} catch (error) {
+			// duplicate hash
+			if (error.errno === 1062) {
+				if (force) {
+					this.logger.info(`Force Entry Insert on _id ${error.index}`);
+					const res = await this.db.query('UPDATE Entry SET ? WHERE hash = ?;', [
+						entry,
+						entry.hash,
+					]);
+					return { _id: res.insertId, replaced: force };
+				}
+				return { _id: error.index, replaced: force };
 			}
-			return { _id: existingId, replaced };
 		}
 	}
 	async read(_id: DBController.id): Promise<DBEntry.Entry> {

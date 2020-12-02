@@ -16,12 +16,6 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Base de datos: `GPIPI`
---
-CREATE DATABASE IF NOT EXISTS `GPIPI` DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;
-USE GPIPI;
-
---
 -- Table structure for table `Analysis`
 --
 
@@ -52,8 +46,9 @@ CREATE TABLE `Analysis` (
   `_deleted` tinyint(1) NOT NULL DEFAULT 0,
   `completionDate` date NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`_id`),
-  KEY `Analysis_FK` (`_entryId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  KEY `Analysis_FK` (`_entryId`),
+  CONSTRAINT `Analysis_FK` FOREIGN KEY (`_entryId`) REFERENCES `Entry` (`_id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -72,9 +67,8 @@ CREATE TABLE `Entry` (
   `content` varchar(512) COLLATE utf8mb4_unicode_ci NOT NULL,
   `_deleted` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`_id`),
-  KEY `Entry_hash_IDX` (`hash`) USING BTREE,
-  KEY `Entry_metaKey_IDX` (`metaKey`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  UNIQUE KEY `Entry_hash_IDX` (`hash`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=55 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -90,4 +84,4 @@ CREATE TABLE `Entry` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-11-14 13:13:30
+-- Dump completed on 2020-12-01 23:24:01
