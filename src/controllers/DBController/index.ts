@@ -113,15 +113,17 @@ export class ServerDBController implements DBController {
 				);
 				if (!replaced) {
 					await this.$analysis.create(
-						{ ...sentiments, ...{ _entryId: _id, modelVersion } },
+						{ ...sentiments, _entryId: _id, modelVersion },
 						false,
 					);
 				}
 			} catch (error) {
-				this.logger.debug(`Insert error`);
-				this.logger.debug(`Insert error, content: ${input.content}`);
-				this.logger.debug(`Insert error, size: ${input.content.length}`);
-				throw new Error(error);
+				if (error !== 'Entry Exists' && error !== 'Analysis Exists') {
+					this.logger.debug(`Insert error`);
+					this.logger.debug(`Insert error, content: ${input.content}`);
+					this.logger.debug(`Insert error, size: ${input.content.length}`);
+					throw new Error(error);
+				}
 			}
 		}
 
