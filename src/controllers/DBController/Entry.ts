@@ -23,7 +23,13 @@ export class ServerDBEntry implements DBEntry {
 				return { _id: res.insertId };
 			} catch (error) {
 				// duplicate comment hash
-				if (error.errno === 1062) throw new Error('Entry already exists');
+				if (error.errno === 1062) {
+					const res: { insertId: number } = await this.db.query(
+						'SELECT _id FROM Entry WHERE hash = ?',
+						entry.hash,
+					);
+					return { _id: res[0]._id, replaced: force };
+				}
 				throw error;
 			}
 		} else {

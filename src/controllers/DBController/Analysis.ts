@@ -22,7 +22,13 @@ export class ServerDBAnalysis implements DBAnalysis {
 				return { _id: res.insertId };
 			} catch (error) {
 				// duplicate _entryId
-				if (error.errno === 1062) throw new Error('Analysis already exists');
+				if (error.errno === 1062) {
+					const res: { insertId: number } = await this.db.query(
+						'SELECT _id FROM Analysis WHERE _entryId = ?',
+						entry._entryId,
+					);
+					return { _id: res[0]._id, replaced: force };
+				}
 				throw error;
 			}
 		} else {
