@@ -53,7 +53,7 @@ CREATE TABLE `Analysis` (
   `_deleted` tinyint(1) NOT NULL DEFAULT 0,
   `completionDate` date NOT NULL DEFAULT current_timestamp(),
   PRIMARY KEY (`_id`),
-  KEY `Analysis_FK` (`_entryId`),
+  UNIQUE KEY `Analysis_FK` (`_entryId`) USING BTREE,
   CONSTRAINT `Analysis_FK` FOREIGN KEY (`_entryId`) REFERENCES `Entry` (`_id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB AUTO_INCREMENT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
