@@ -99,6 +99,7 @@ export class ServerDBController implements DBController {
 		);
 	}
 	async insert(analysis: Analyzer.Analysis): Promise<void> {
+		// TODO fix performance
 		if (!this.db) throw new Error('no db instance');
 		// prioritaria
 		const { result, metaKey, extractor, modelVersion } = analysis;

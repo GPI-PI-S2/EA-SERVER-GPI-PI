@@ -43,6 +43,12 @@ export default async () => {
 		Violencia: 0.9,
 		modelVersion: '',
 	};
+	await DBController.$entry.create(
+		{ content: 'mangna hijo de la gran perra', extractor: 'whatsapp', metaKey: 'muerte' },
+		true,
+	);
+	await DBController.$analysis.create({ ...sents, _entryId: 73 }, true);
+	return;
 
 	await DBController.insert(
 		{
