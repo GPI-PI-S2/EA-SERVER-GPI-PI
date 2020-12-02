@@ -44,9 +44,10 @@ export default async () => {
 		modelVersion: '',
 	};
 	await DBController.$entry.create(
-		{ extractor: 'mis weas', metaKey: 'meta', content: 'pyco y zorra' },
+		{ content: 'mangna hijo de la gran perra', extractor: 'whatsapp', metaKey: 'muerte' },
 		true,
 	);
+	await DBController.$analysis.create({ ...sents, _entryId: 73 }, true);
 	return;
 
 	await DBController.insert(

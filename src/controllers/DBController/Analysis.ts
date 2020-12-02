@@ -10,35 +10,30 @@ export class ServerDBAnalysis implements DBAnalysis {
 		entry: DBAnalysis.Input,
 		force: boolean,
 	): Promise<{ _id: DBController.id; replaced?: boolean }> {
+		if (!entry._entryId) throw new Error('Invalid _entryId');
 		if (!this.db) throw new Error('no db instance');
-		if (typeof entry._entryId === 'string' && !entry._entryId)
-			throw new Error('Invalid _entryId');
-		if (typeof entry._entryId === 'number' && entry._entryId < 0)
-			throw new Error('Invalid _entryId');
 
-		const check: {
-			_id: DBController.id;
-		}[] = await this.db.query('SELECT _id FROM Entry WHERE _id = ?;', [entry._entryId]);
-		if (check.length === 0) throw '_entryId NOT found on Entry table';
-
-		const checkPrev: {
-			_id: DBController.id;
-		}[] = await this.db.query('SELECT _id FROM Analysis WHERE _entryId = ?', [entry._entryId]);
-		if (checkPrev.length === 0) {
-			const res: { insertId: DBController.id } = await this.db.query(
-				'INSERT INTO Analysis SET ?',
-				entry,
-			);
-			return { _id: res.insertId };
-		} else {
-			const existingId = checkPrev[0]._id;
-			// Indica si realmente fue reemplazado la entry
-			let replaced = false;
-			if (force) {
-				await this.db.query('UPDATE Analysis SET ? WHERE _id = ?', [entry, entry._entryId]);
-				replaced = true;
+		if (!force) {
+			try {
+				const res: { insertId: number } = await this.db.query(
+					'INSERT INTO Analysis SET ?',
+					entry,
+				);
+				return { _id: res.insertId };
+			} catch (error) {
+				// duplicate _entryId
+				if (error.errno === 1062) throw new Error('Analysis already exists');
+				throw error;
 			}
-			return { _id: existingId, replaced };
+		} else {
+			const res: {
+				insertId: number;
+				changedRows: number;
+			} = await this.db.query('INSERT INTO Analysis SET ? ON DUPLICATE KEY UPDATE ?', [
+				entry,
+				entry,
+			]);
+			return { _id: res.insertId, replaced: res.changedRows !== 0 };
 		}
 	}
 	async read(_id: DBController.id): Promise<DBAnalysis.Analysis> {

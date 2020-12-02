@@ -14,22 +14,27 @@ export class ServerDBEntry implements DBEntry {
 		if (!this.db) throw new Error('no db instance');
 		entry.content = entry.content ? entry.content : '';
 		entry.hash = MD5(entry.content).toString();
-		try {
-			const res: { insertId: number } = await this.db.query('INSERT INTO Entry SET ?', entry);
-			return { _id: res.insertId };
-		} catch (error) {
-			// duplicate hash
-			if (error.errno === 1062) {
-				if (force) {
-					this.logger.info(`Force Entry Insert on _id ${error.index}`);
-					const res = await this.db.query('UPDATE Entry SET ? WHERE hash = ?;', [
-						entry,
-						entry.hash,
-					]);
-					return { _id: res.insertId, replaced: force };
-				}
-				return { _id: error.index, replaced: force };
+		if (!force) {
+			try {
+				const res: { insertId: number } = await this.db.query(
+					'INSERT INTO Entry SET ?',
+					entry,
+				);
+				return { _id: res.insertId };
+			} catch (error) {
+				// duplicate comment hash
+				if (error.errno === 1062) throw new Error('Entry already exists');
+				throw error;
 			}
+		} else {
+			const res: {
+				insertId: number;
+				changedRows: number;
+			} = await this.db.query('INSERT INTO Entry SET ? ON DUPLICATE KEY UPDATE ?', [
+				entry,
+				entry,
+			]);
+			return { _id: res.insertId, replaced: res.changedRows !== 0 };
 		}
 	}
 	async read(_id: DBController.id): Promise<DBEntry.Entry> {
