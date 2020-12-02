@@ -16,12 +16,17 @@ ejemplos:
 logger.info("mensaje");
 logger.debug("mensaje",{var:123})
 */
-import { DBController } from 'ea-core-gpi-pi';
-import { container } from 'tsyringe';
+import { arrayLeftOuterJoin } from 'ea-common-gpi-pi';
+import { DBSessionChecker } from '../../src/controllers/DBSessionChecker';
 import logger from '../../src/loaders/logger';
 export default async () => {
 	logger.info('Serve db started!');
-	const DBController = container.resolve<DBController>('DBController');
+	const localSessionKeys = ['W0ui6zxxDZzVv8_LraUch0UEvk-nhpvm', 'perro'];
+	const validSessionKeys = await DBSessionChecker.check();
+	const obsoletKeys = arrayLeftOuterJoin(localSessionKeys, validSessionKeys);
+
+	console.log({ localSessionKeys, validSessionKeys });
+	/* 	const DBController = container.resolve<DBController>('DBController');
 	await DBController.connect();
 	const sents = {
 		Asertividad: 0.4,
@@ -58,5 +63,5 @@ export default async () => {
 			result: [{ input: { content: 'frase weona tres' }, sentiments: sents }],
 		},
 		false,
-	);
+	); */
 };

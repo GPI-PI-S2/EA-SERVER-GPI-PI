@@ -25,9 +25,11 @@ export default async (app: Router): Promise<void> => {
 		try {
 			const logger = container.resolve<Logger>('logger');
 			logger.verbose('CRONO, checking sessions');
+			//console.table(Object.keys(tempList));
 			const validSessionKeys = await DBSessionChecker.check();
 			const localSessionKeys = Object.keys(tempList);
 			const obsoletKeys = arrayLeftOuterJoin(localSessionKeys, validSessionKeys);
+			//console.log('removed', obsoletKeys);
 			logger.verbose(`CRONO, sessions to remove: ${obsoletKeys.length}`);
 			obsoletKeys.forEach((key) => delete tempList[key]);
 		} catch (error) {
@@ -98,6 +100,7 @@ export default async (app: Router): Promise<void> => {
 			if (!options) options = {};
 			const extractor = extractorGet(sessionId, id, false);
 			const gpiRes = new GPIResponse(res);
+			//console.log('deploy', extractor);
 			if (!extractor)
 				return gpiRes.error('NOT_FOUND', 'No se encontró el extractor', extractor);
 			try {
@@ -119,11 +122,7 @@ export default async (app: Router): Promise<void> => {
 		celebrate({
 			body: Joi.object({
 				id: Joi.string().required().min(1).max(50),
-				options: Joi.object({
-					metaKey: Joi.string().max(250).required(),
-					limit: Joi.number().min(1).max(1000).required(),
-					minSentenceSize: Joi.number().min(1).max(100).optional(),
-				}),
+				options: Joi.any().required(),
 			}),
 		}),
 		async (req, res) => {
@@ -138,15 +137,25 @@ export default async (app: Router): Promise<void> => {
 			const gpiRes = new GPIResponse(res);
 			try {
 				const extractor = extractorGet(sessionId, id, true);
+				//console.log('obtain', extractor);
 				const obtainResponse = await extractor.obtain(options as never);
 				if (obtainResponse.isError)
-					return gpiRes.error('EXTRACTOR_ERROR', 'Problemas al ejecutar deploy', {
+					return gpiRes.error('EXTRACTOR_ERROR', 'Problemas al ejecutar obtain', {
 						status: obtainResponse.status,
-						data: obtainResponse.data,
+						// eslint-disable-next-line @typescript-eslint/no-explicit-any
+						data: (obtainResponse.data as any).message
+							? // eslint-disable-next-line @typescript-eslint/no-explicit-any
+							  (obtainResponse.data as any).message
+							: obtainResponse.data,
 					});
 				else return gpiRes.ok({ status: obtainResponse.status, data: obtainResponse.data });
 			} catch (error) {
-				return gpiRes.error('EXTRACTOR_TIMEOUT', 'Instancia no inicializadaa', error);
+				console.log(error);
+				return gpiRes.error(
+					'EXTRACTOR_TIMEOUT',
+					'Instancia no inicializada',
+					error.message ? error.message : error,
+				);
 			}
 		},
 	);

@@ -16,12 +16,19 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
+
+-- Base de datos: `GPIPI`
+--
+CREATE DATABASE IF NOT EXISTS `GPIPI` DEFAULT CHARSET = utf8mb4 DEFAULT COLLATE = utf8mb4_unicode_ci;
+USE GPIPI;
+
+--
 -- Table structure for table `Analysis`
 --
 
 DROP TABLE IF EXISTS `Analysis`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4  */;
 CREATE TABLE `Analysis` (
   `_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `_entryId` bigint(20) unsigned NOT NULL,
@@ -57,7 +64,7 @@ CREATE TABLE `Analysis` (
 
 DROP TABLE IF EXISTS `Entry`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
+/*!40101 SET character_set_client = utf8mb4  */;
 CREATE TABLE `Entry` (
   `_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `hash` varchar(256) COLLATE utf8mb4_unicode_ci NOT NULL,

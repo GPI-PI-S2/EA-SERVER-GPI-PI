@@ -56,6 +56,7 @@ export class ServerDBController implements DBController {
 			user: DB_USER,
 			password: DB_PASS,
 			database: DB_NAME,
+			charset: 'utf8mb4',
 		});
 		this.db = await connectionPool;
 		this.$entry = new ServerDBEntry(this.db);
@@ -105,15 +106,22 @@ export class ServerDBController implements DBController {
 		const { result, metaKey, extractor, modelVersion } = analysis;
 
 		for (const { input, sentiments } of result) {
-			const { _id, replaced } = await this.$entry.create(
-				{ metaKey, extractor, content: input.content },
-				false,
-			);
-			if (!replaced) {
-				await this.$analysis.create(
-					{ ...sentiments, ...{ _entryId: _id, modelVersion } },
+			try {
+				const { _id, replaced } = await this.$entry.create(
+					{ metaKey, extractor, content: input.content },
 					false,
 				);
+				if (!replaced) {
+					await this.$analysis.create(
+						{ ...sentiments, ...{ _entryId: _id, modelVersion } },
+						false,
+					);
+				}
+			} catch (error) {
+				this.logger.debug(`Insert error`);
+				this.logger.debug(`Insert error, content: ${input.content}`);
+				this.logger.debug(`Insert error, size: ${input.content.length}`);
+				throw new Error(error);
 			}
 		}
 
