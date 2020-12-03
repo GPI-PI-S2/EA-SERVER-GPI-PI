@@ -192,11 +192,7 @@ export class ServerDBController implements DBController {
 		let currentInserted = 0;
 		// en cada iteracion obtener una particion de datos y pasarlos a la base de datos
 		while (!lastPartition) {
-			const rows = await SQLiteDb.all<(DBEntry.Input & DBAnalysis.Input)[]>(
-				querySQLite,
-				currentInserted,
-				limit,
-			);
+			const rows = await SQLiteDb.all<SQLiteRow[]>(querySQLite, currentInserted, limit);
 			if (rows.length !== 0) {
 				const entryRes: { affectedRows: number } = await this.db.query(entryQuery, [
 					rows.map(getEntryFromRow),
