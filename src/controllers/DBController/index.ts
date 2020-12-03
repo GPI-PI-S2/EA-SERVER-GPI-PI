@@ -139,46 +139,52 @@ export class ServerDBController implements DBController {
 	}
 
 	async bulkDB(dbPath: string): Promise<DBController.bulkDBResult> {
-		const analysis = {
+		const analysisMySQL: Required<Omit<DBAnalysis.Input, '_entryId'>> &
+			Pick<DBEntry.Entry, 'hash'> = {
 			...this.sentiments,
 			completionDate: null,
 			modelVersion: null,
 			hash: null, // se usa el hash del Entry en un trigger de la base de datos para sacar el _entryId asociado
 		};
 
-		const entryProps = Object.keys(this.entry)
-			.map((key) => `\`${key}\``)
-			.join(', ');
-		const analysisProps = Object.keys(analysis)
-			.map((key) => `\`${key}\``)
-			.join(', ');
-
-		const getEntryFromRow = (row: DBEntry.Input & DBAnalysis.Input) =>
-			Object.keys(this.entry).map((key) => row[key]);
-		const getAnalysisFromRow = (row: DBEntry.Input & DBAnalysis.Input) =>
-			Object.keys(analysis).map((key) => row[key]);
-
-		const entryQuery = `INSERT IGNORE INTO Entry (${entryProps}) VALUES ?`;
-		const analysisQuery = `INSERT IGNORE INTO Analysis (${analysisProps}) VALUES ?`;
+		const analysisSQlite: Omit<typeof analysisMySQL, 'hash'> = {
+			...this.sentiments,
+			completionDate: null,
+			modelVersion: null,
+		};
 
 		const SQLiteDb = await open({
 			filename: dbPath,
 			driver: sqlite3.Database,
 		});
 
-		const limit = 1000; // particion de 1000 registros
-
-		const query =
+		const querySQLite =
 			'SELECT ' +
 			[
-				...Object.keys({
-					...this.sentiments,
-					modelVersion: null,
-					completionDate: null,
-				}).map((sentiment) => `a.\`${sentiment}\``),
+				...Object.keys(analysisSQlite).map((analysisParam) => `a.\`${analysisParam}\``),
 				...Object.keys(this.entry).map((entryParam) => `e.\`${entryParam}\``),
 			].join(', ') +
 			' FROM Analysis a, Entry e WHERE a.`_entryId` = e.`_id` AND e.`_deleted` = 0 LIMIT ?,?;';
+
+		type SQLiteRow = DBEntry.Input & typeof analysisSQlite;
+
+		const getEntryFromRow = (row: SQLiteRow) => Object.keys(this.entry).map((key) => row[key]);
+
+		const getAnalysisFromRow = (row: SQLiteRow) =>
+			Object.keys(analysisMySQL).map((key) => row[key]);
+
+		const limit = 1000; // particion de 1000 registros
+
+		const entryProps = Object.keys(this.entry)
+			.map((key) => `\`${key}\``)
+			.join(', ');
+
+		const analysisProps = Object.keys(analysisMySQL)
+			.map((key) => `\`${key}\``)
+			.join(', ');
+
+		const entryQuery = `INSERT IGNORE INTO Entry (${entryProps}) VALUES ?`;
+		const analysisQuery = `INSERT IGNORE INTO Analysis (${analysisProps}) VALUES ?`;
 
 		let lastPartition = false;
 		let accepted = 0;
@@ -187,17 +193,15 @@ export class ServerDBController implements DBController {
 		// en cada iteracion obtener una particion de datos y pasarlos a la base de datos
 		while (!lastPartition) {
 			const rows = await SQLiteDb.all<(DBEntry.Input & DBAnalysis.Input)[]>(
-				query,
+				querySQLite,
 				currentInserted,
 				limit,
 			);
 			if (rows.length !== 0) {
-				const entryRes: { affectedRows: number } = await this.db.query(
-					entryQuery,
+				const entryRes: { affectedRows: number } = await this.db.query(entryQuery, [
 					rows.map(getEntryFromRow),
-				);
-				await this.db.query(analysisQuery, rows.map(getAnalysisFromRow));
-
+				]);
+				await this.db.query(analysisQuery, [rows.map(getAnalysisFromRow)]);
 				currentInserted = currentInserted + limit;
 
 				accepted = accepted + entryRes.affectedRows;
