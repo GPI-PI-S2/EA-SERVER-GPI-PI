@@ -171,7 +171,11 @@ export class ServerDBController implements DBController {
 		const query =
 			'SELECT ' +
 			[
-				...Object.keys(this.sentiments).map((sentiment) => `a.\`${sentiment}\``),
+				...Object.keys({
+					...this.sentiments,
+					modelVersion: null,
+					completionDate: null,
+				}).map((sentiment) => `a.\`${sentiment}\``),
 				...Object.keys(this.entry).map((entryParam) => `e.\`${entryParam}\``),
 			].join(', ') +
 			' FROM Analysis a, Entry e WHERE a.`_entryId` = e.`_id` AND e.`_deleted` = 0 LIMIT ?,?;';
