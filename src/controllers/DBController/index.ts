@@ -195,7 +195,7 @@ export class ServerDBController implements DBController {
 			const rows = await SQLiteDb.all<SQLiteRow[]>(querySQLite, currentInserted, limit);
 			if (rows.length !== 0) {
 				const entryRes: { affectedRows: number } = await this.db.query(entryQuery, [
-					rows.map(getEntryFromRow),
+					rows.map(getEntryFromRow)
 				]);
 				await this.db.query(analysisQuery, [rows.map(getAnalysisFromRow)]);
 				currentInserted = currentInserted + limit;
@@ -206,6 +206,8 @@ export class ServerDBController implements DBController {
 				lastPartition = true;
 			}
 		}
+
+		SQLiteDb.close();
 
 		return { accepted, rejected };
 	}
