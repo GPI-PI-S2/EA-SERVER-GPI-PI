@@ -10,8 +10,8 @@ export class ServerDBAnalysis implements DBAnalysis {
 		entry: DBAnalysis.Input,
 		force: boolean,
 	): Promise<{ _id: DBController.id; replaced?: boolean }> {
-		if (!entry._entryId) throw new Error('Invalid _entryId');
 		if (!this.db) throw new Error('no db instance');
+		if (!entry._entryId) throw new Error('Invalid _entryId');
 
 		if (!force) {
 			try {
@@ -22,7 +22,9 @@ export class ServerDBAnalysis implements DBAnalysis {
 				return { _id: res.insertId };
 			} catch (error) {
 				// duplicate _entryId
-				if (error.errno === 1062) throw new Error('Analysis already exists');
+				if (error.errno === 1062) {
+					throw 'Analysis Exists';
+				}
 				throw error;
 			}
 		} else {

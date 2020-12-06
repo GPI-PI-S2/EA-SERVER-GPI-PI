@@ -114,15 +114,17 @@ export class ServerDBController implements DBController {
 				);
 				if (!replaced) {
 					await this.$analysis.create(
-						{ ...sentiments, ...{ _entryId: _id, modelVersion } },
+						{ ...sentiments, _entryId: _id, modelVersion },
 						false,
 					);
 				}
 			} catch (error) {
-				this.logger.debug(`Insert error`);
-				this.logger.debug(`Insert error, content: ${input.content}`);
-				this.logger.debug(`Insert error, size: ${input.content.length}`);
-				throw new Error(error);
+				if (error !== 'Entry Exists' && error !== 'Analysis Exists') {
+					this.logger.debug(`Insert error`);
+					this.logger.debug(`Insert error, content: ${input.content}`);
+					this.logger.debug(`Insert error, size: ${input.content.length}`);
+					throw new Error(error);
+				}
 			}
 		}
 
@@ -136,38 +138,77 @@ export class ServerDBController implements DBController {
 		);
 		return res.length !== 0;
 	}
+
 	async bulkDB(dbPath: string): Promise<DBController.bulkDBResult> {
+		const analysisMySQL: Required<Omit<DBAnalysis.Input, '_entryId'>> &
+			Pick<DBEntry.Entry, 'hash'> = {
+			...this.sentiments,
+			completionDate: null,
+			modelVersion: null,
+			hash: null, // se usa el hash del Entry en un trigger de la base de datos para sacar el _entryId asociado
+		};
+
+		const analysisSQlite: Omit<typeof analysisMySQL, 'hash'> = {
+			...this.sentiments,
+			completionDate: null,
+			modelVersion: null,
+		};
+
 		const SQLiteDb = await open({
 			filename: dbPath,
 			driver: sqlite3.Database,
 		});
-		const query =
+
+		const querySQLite =
 			'SELECT ' +
 			[
-				...Object.keys(this.sentiments).map((sentiment) => `a.\`${sentiment}\``),
+				...Object.keys(analysisSQlite).map((analysisParam) => `a.\`${analysisParam}\``),
 				...Object.keys(this.entry).map((entryParam) => `e.\`${entryParam}\``),
 			].join(', ') +
-			' FROM Analysis a, Entry e WHERE a.`_entryId` = e.`_id` AND e.`_deleted` = 0;';
+			' FROM Analysis a, Entry e WHERE a.`_entryId` = e.`_id` AND e.`_deleted` = 0 LIMIT ?,?;';
 
-		const rows: (DBEntry.Input & DBAnalysis.Input)[] = await SQLiteDb.all(query);
+		type SQLiteRow = DBEntry.Input & typeof analysisSQlite;
+
+		const getEntryFromRow = (row: SQLiteRow) => Object.keys(this.entry).map((key) => row[key]);
+
+		const getAnalysisFromRow = (row: SQLiteRow) =>
+			Object.keys(analysisMySQL).map((key) => row[key]);
+
+		const limit = 1000; // particion de 1000 registros
+
+		const entryProps = Object.keys(this.entry)
+			.map((key) => `\`${key}\``)
+			.join(', ');
+
+		const analysisProps = Object.keys(analysisMySQL)
+			.map((key) => `\`${key}\``)
+			.join(', ');
+
+		const entryQuery = `INSERT IGNORE INTO Entry (${entryProps}) VALUES ?`;
+		const analysisQuery = `INSERT IGNORE INTO Analysis (${analysisProps}) VALUES ?`;
+
+		let lastPartition = false;
 		let accepted = 0;
 		let rejected = 0;
-		for (const row of rows) {
-			// TODO optimizar
-			// idea filtrar resultados cuyas ids existen, resultados existentes -> dbEntry
-			// obtener max(dbentry -> _id)
-			// analysis map {_entryId} -> {_entryId = max++} -> dbAnalysis
-			// needs stringbuffer y aumentar tamaño de query de la base de datos.
-			const { _id, replaced } = await this.$entry.create(row, false);
-			if (!replaced) {
-				accepted += 1;
-				await this.$analysis.create({ ...row, ...{ _entryId: _id } }, false);
+		let currentInserted = 0;
+		// en cada iteracion obtener una particion de datos y pasarlos a la base de datos
+		while (!lastPartition) {
+			const rows = await SQLiteDb.all<SQLiteRow[]>(querySQLite, currentInserted, limit);
+			if (rows.length !== 0) {
+				const entryRes: { affectedRows: number } = await this.db.query(entryQuery, [
+					rows.map(getEntryFromRow)
+				]);
+				await this.db.query(analysisQuery, [rows.map(getAnalysisFromRow)]);
+				currentInserted = currentInserted + limit;
+
+				accepted = accepted + entryRes.affectedRows;
+				rejected = rejected + rows.length - entryRes.affectedRows;
 			} else {
-				rejected += 1;
+				lastPartition = true;
 			}
 		}
 
-		await SQLiteDb.close();
+		SQLiteDb.close();
 
 		return { accepted, rejected };
 	}

@@ -15,11 +15,9 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
---
-
--- Base de datos: `GPIPI`
---
-CREATE DATABASE IF NOT EXISTS `GPIPI` DEFAULT CHARSET = utf8mb4 DEFAULT COLLATE = utf8mb4_unicode_ci;
+-- Base de datos: `GPIPI`	
+--	
+CREATE DATABASE IF NOT EXISTS `GPIPI` DEFAULT CHARSET = utf8mb4 DEFAULT COLLATE = utf8mb4_unicode_ci;	
 USE GPIPI;
 
 --
@@ -28,7 +26,7 @@ USE GPIPI;
 
 DROP TABLE IF EXISTS `Analysis`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4  */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Analysis` (
   `_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `_entryId` bigint(20) unsigned NOT NULL,
@@ -44,7 +42,7 @@ CREATE TABLE `Analysis` (
   `Liderazgo` decimal(5,4) NOT NULL DEFAULT 0.0000,
   `Manejo de conflictos` decimal(5,4) NOT NULL DEFAULT 0.0000,
   `Motivación de logro` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `Percepción y comprensión Emocional` decimal(5,4) NOT NULL,
+  `Percepción y comprensión Emocional` decimal(5,4) NOT NULL DEFAULT 0.0000,
   `Optimismo` decimal(5,4) NOT NULL DEFAULT 0.0000,
   `Relación Social` decimal(5,4) NOT NULL DEFAULT 0.0000,
   `Tolerancia a la frustración` decimal(5,4) NOT NULL DEFAULT 0.0000,
@@ -52,11 +50,34 @@ CREATE TABLE `Analysis` (
   `modelVersion` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0',
   `_deleted` tinyint(1) NOT NULL DEFAULT 0,
   `completionDate` date NOT NULL DEFAULT current_timestamp(),
+  `hash` varchar(256) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`_id`),
   UNIQUE KEY `Analysis_FK` (`_entryId`) USING BTREE,
   CONSTRAINT `Analysis_FK` FOREIGN KEY (`_entryId`) REFERENCES `Entry` (`_id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+/*!50003 SET @saved_cs_client      = @@character_set_client */ ;
+/*!50003 SET @saved_cs_results     = @@character_set_results */ ;
+/*!50003 SET @saved_col_connection = @@collation_connection */ ;
+/*!50003 SET character_set_client  = utf8mb4 */ ;
+/*!50003 SET character_set_results = utf8mb4 */ ;
+/*!50003 SET collation_connection  = utf8mb4_unicode_ci */ ;
+/*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
+/*!50003 SET sql_mode              = 'IGNORE_SPACE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
+DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`sebastian`@`localhost`*/ /*!50003 TRIGGER `Entry_id_from_hash`
+BEFORE INSERT
+ON `Analysis` FOR EACH ROW
+BEGIN
+  IF (NEW.hash IS NOT NULL) THEN 
+    SET NEW._entryId = (SELECT _id FROM Entry WHERE Entry.hash = NEW.hash);
+  END IF;
+END */;;
+DELIMITER ;
+/*!50003 SET sql_mode              = @saved_sql_mode */ ;
+/*!50003 SET character_set_client  = @saved_cs_client */ ;
+/*!50003 SET character_set_results = @saved_cs_results */ ;
+/*!50003 SET collation_connection  = @saved_col_connection */ ;
 
 --
 -- Table structure for table `Entry`
@@ -64,7 +85,7 @@ CREATE TABLE `Analysis` (
 
 DROP TABLE IF EXISTS `Entry`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4  */;
+/*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `Entry` (
   `_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `hash` varchar(256) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -75,7 +96,22 @@ CREATE TABLE `Entry` (
   `_deleted` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`_id`),
   UNIQUE KEY `Entry_hash_IDX` (`hash`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `sessions`
+--
+
+DROP TABLE IF EXISTS `sessions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `sessions` (
+  `session_id` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `expires` int(11) unsigned NOT NULL,
+  `data` mediumtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL,
+  PRIMARY KEY (`session_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -91,4 +127,4 @@ CREATE TABLE `Entry` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-12-01 23:24:01
+-- Dump completed on 2020-12-02 21:56:34
