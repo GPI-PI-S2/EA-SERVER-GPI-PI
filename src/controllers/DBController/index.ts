@@ -6,6 +6,7 @@ import sqlite3 from 'sqlite3';
 import { container } from 'tsyringe';
 import { Logger } from 'winston';
 import { DB_ADDRESS, DB_LIMIT, DB_NAME, DB_PASS, DB_PORT, DB_USER } from '../../config';
+import { CustomError } from '../CustomError';
 import { ServerDBAnalysis } from './Analysis';
 import { ServerDBEntry } from './Entry';
 
@@ -67,7 +68,7 @@ export class ServerDBController implements DBController {
 		return;
 	}
 	async calc(metakey: string): Promise<DBController.calcResult> {
-		if (!this.db) throw new Error('no db instance');
+		if (!this.db) throw new CustomError('INTERNAL_ERROR', 'No DB instance');
 		const sentimentsAVGSQL =
 			'SELECT ' +
 			Object.keys(this.sentiments)
@@ -87,7 +88,7 @@ export class ServerDBController implements DBController {
 		};
 	}
 	async stats(): Promise<{ [key: string]: number }> {
-		if (!this.db) throw new Error('no db instance');
+		if (!this.db) throw new CustomError('INTERNAL_ERROR', 'No DB instance');
 		// cuantos reg hay por cada extractor
 		const res: { total: number; extractor: DBEntry.Entry['extractor'] }[] = await this.db.query(
 			'SELECT COUNT(_id) as `total`, extractor  FROM Entry GROUP BY extractor',
@@ -102,7 +103,7 @@ export class ServerDBController implements DBController {
 	}
 	async insert(analysis: Anal.Analysis): Promise<void> {
 		// TODO fix performance
-		if (!this.db) throw new Error('no db instance');
+		if (!this.db) throw new CustomError('INTERNAL_ERROR', 'No DB instance');
 		// prioritaria
 		const { result, metaKey, extractor, modelVersion } = analysis;
 
@@ -131,7 +132,7 @@ export class ServerDBController implements DBController {
 		return;
 	}
 	async entryExists(hash: DBEntry.Entry['hash']): Promise<boolean> {
-		if (!this.db) throw new Error('no db instance');
+		if (!this.db) throw new CustomError('INTERNAL_ERROR', 'No DB instance');
 		const res: DBController.id[] = await this.db.query(
 			'SELECT _id FROM Entry WHERE hash = ?;',
 			[hash],
@@ -196,7 +197,7 @@ export class ServerDBController implements DBController {
 			const rows = await SQLiteDb.all<SQLiteRow[]>(querySQLite, currentInserted, limit);
 			if (rows.length !== 0) {
 				const entryRes: { affectedRows: number } = await this.db.query(entryQuery, [
-					rows.map(getEntryFromRow)
+					rows.map(getEntryFromRow),
 				]);
 				await this.db.query(analysisQuery, [rows.map(getAnalysisFromRow)]);
 				currentInserted = currentInserted + limit;

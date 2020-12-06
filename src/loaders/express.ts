@@ -5,6 +5,7 @@ import express from 'express';
 import mysqlStore from 'express-mysql-session';
 import session from 'express-session';
 import { API_SECRET, DB_ADDRESS, DB_NAME, DB_PASS, DB_PORT, DB_USER } from '../config';
+import { GPIResponse } from '../controllers/GPIResponse';
 import { apiRoute } from '../routes';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MySQLStore = mysqlStore(session as any);
@@ -50,18 +51,17 @@ export default async ({ app }: { app: express.Application }): Promise<void> => {
 	app.use(await apiRoute());
 
 	/// catch 404 and forward to error handler
-	app.use((req, res, next) => {
-		const err = new Error('Not Found');
-		res.status(404);
-		next(err);
+	app.use((req, res) => {
+		const response = new GPIResponse(res);
+		return response.error('NOT_FOUND', 'No encontrado');
 	});
 
 	/// error handlers
 	app.use((err, req, res, next) => {
 		// Handle 401 thrown by express-jwt library
-		if (err.name === 'UnauthorizedError') {
-			return res.status(err.status).send({ data: err.message }).end();
-		}
+		const response = new GPIResponse(res);
+		if (err.name === 'UnauthorizedError')
+			return response.error('UNAUTHORIZED', 'No está autorizado a consumir este servicio');
 
 		// Handle 401 thrown by Celebrate
 		if (isCelebrateError(err)) {
@@ -70,26 +70,14 @@ export default async ({ app }: { app: express.Application }): Promise<void> => {
 				const msg = entry.message;
 				body += msg + ', ';
 			});
-			return res
-				.status(400)
-				.send({
-					type: 'TYPE_ERROR',
-					message: 'Error de tipeo',
-					data: { body: body.slice(0, -2) },
-				})
-				.end();
+			return response.error('BAD_REQUEST', 'La petición es inválida', body.slice(0, -2));
 		}
 		return next(err);
 	});
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	app.use((err, req, res, next) => {
-		res.status(err.status || 500);
-		res.json({
-			errors: {
-				type: 'INTERNAL_ERROR',
-				message: 'Error desconocido',
-				data: err,
-			},
-		});
+		const response = new GPIResponse(res);
+		if (err.isCustom) return response.errorFromCustom(err);
+		else return response.error('INTERNAL_ERROR', 'Error interno del servidor', err.message);
 	});
 };

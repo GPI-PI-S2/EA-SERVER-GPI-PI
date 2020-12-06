@@ -2,6 +2,7 @@ import { DBAnalysis, DBController } from 'ea-core-gpi-pi';
 import mysql from 'promise-mysql';
 import { container } from 'tsyringe';
 import { Logger } from 'winston';
+import { CustomError } from '../CustomError';
 
 export class ServerDBAnalysis implements DBAnalysis {
 	constructor(private readonly db: mysql.Pool) {}
@@ -10,7 +11,7 @@ export class ServerDBAnalysis implements DBAnalysis {
 		entry: DBAnalysis.Input,
 		force: boolean,
 	): Promise<{ _id: DBController.id; replaced?: boolean }> {
-		if (!this.db) throw new Error('no db instance');
+		if (!this.db) throw new CustomError('INTERNAL_ERROR', 'No DB instance');
 		if (!entry._entryId) throw new Error('Invalid _entryId');
 
 		if (!force) {
@@ -39,7 +40,7 @@ export class ServerDBAnalysis implements DBAnalysis {
 		}
 	}
 	async read(_id: DBController.id): Promise<DBAnalysis.Analysis> {
-		if (!this.db) throw new Error('no db instance');
+		if (!this.db) throw new CustomError('INTERNAL_ERROR', 'No DB instance');
 		const res: DBAnalysis.Analysis[] = await this.db.query(
 			'SELECT * FROM Analysis WHERE _id = ? AND _deleted = 0;',
 			[_id],
@@ -51,12 +52,12 @@ export class ServerDBAnalysis implements DBAnalysis {
 		return { ...res[0] };
 	}
 	async update(_id: DBController.id, entry: DBAnalysis.Input): Promise<void> {
-		if (!this.db) throw new Error('no db instance');
+		if (!this.db) throw new CustomError('INTERNAL_ERROR', 'No DB instance');
 		this.logger.info('Updating Analysis, _id ', _id);
 		await this.db.query('UPDATE Analysis SET ? WHERE _id = ?;', [entry, _id]);
 	}
 	async delete(_id: DBController.id): Promise<void> {
-		if (!this.db) throw new Error('no db instance');
+		if (!this.db) throw new CustomError('INTERNAL_ERROR', 'No DB instance');
 		this.logger.info('Deleting Analysis, _id: ', _id);
 		await this.db.query('UPDATE Analysis SET _deleted = 1 WHERE _id = ?;', [_id]);
 	}

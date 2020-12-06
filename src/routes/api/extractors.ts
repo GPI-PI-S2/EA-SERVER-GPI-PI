@@ -72,7 +72,8 @@ export default async (app: Router): Promise<void> => {
 	app.use('/extractors', route);
 	route.get('/list', isApiAuth, async (req, res) => {
 		const list = extractors.availables;
-		return res.json({ data: list }).status(200);
+		const response = new GPIResponse(res);
+		return response.ok(list);
 	});
 	route.post(
 		'/deploy',
