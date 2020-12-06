@@ -12,7 +12,7 @@ export class ServerDBEntry implements DBEntry {
 		force: boolean,
 	): Promise<{ _id: DBController.id; replaced?: boolean }> {
 		if (!this.db) throw new Error('no db instance');
-		entry.content = entry.content ? entry.content : '';
+		if (!entry.content) throw new Error('Invalid content (empty)');
 		entry.hash = MD5(entry.content).toString();
 		if (!force) {
 			try {
@@ -23,7 +23,9 @@ export class ServerDBEntry implements DBEntry {
 				return { _id: res.insertId };
 			} catch (error) {
 				// duplicate comment hash
-				if (error.errno === 1062) throw new Error('Entry already exists');
+				if (error.errno === 1062) {
+					throw 'Entry Exists';
+				}
 				throw error;
 			}
 		} else {

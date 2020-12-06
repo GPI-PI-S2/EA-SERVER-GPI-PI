@@ -1,6 +1,6 @@
 {
 	"name": "ea-server-gpi-pi",
-	"version": "0.0.1",
+	"version": "0.0.5",
 	"description": "Servidor principal del proyecto PI de GPI",
 	"main": "src/app.ts",
 	"scripts": {
@@ -33,7 +33,7 @@
 		"crypto-js": "^4.0.0",
 		"dotenv": "^8.2.0",
 		"ea-common-gpi-pi": "github:GPI-PI-S2/EA-COMMON-GPI-PI",
-		"ea-core-gpi-pi": "github:GPI-PI-S2/EA-CORE-GPI-PI#dev",
+		"ea-core-gpi-pi": "github:GPI-PI-S2/EA-CORE-GPI-PI",
 		"express": "^4.17.1",
 		"express-mysql-session": "^2.1.4",
 		"express-session": "^1.17.1",

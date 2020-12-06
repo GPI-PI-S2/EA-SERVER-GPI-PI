@@ -18,6 +18,7 @@ logger.debug("mensaje",{var:123})
 */
 import { arrayLeftOuterJoin } from 'ea-common-gpi-pi';
 import { DBSessionChecker } from '../../src/controllers/DBSessionChecker';
+import { ServerDBController } from '../../src/controllers/DBController';
 import logger from '../../src/loaders/logger';
 export default async () => {
 	logger.info('Serve db started!');
@@ -26,6 +27,13 @@ export default async () => {
 	const obsoletKeys = arrayLeftOuterJoin(localSessionKeys, validSessionKeys);
 
 	console.log({ localSessionKeys, validSessionKeys });
+
+	const DBController = new ServerDBController();
+
+	DBController.connect();
+
+	await DBController.bulkDB('LocalStore.db');
+
 	/* 	const DBController = container.resolve<DBController>('DBController');
 	await DBController.connect();
 	const sents = {

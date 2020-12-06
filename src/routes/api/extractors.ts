@@ -22,8 +22,8 @@ export default async (app: Router): Promise<void> => {
 	 * con el fin de evitar fugas de memoria
 	 */
 	const job = new CronJob('*/10 * * * *', async () => {
+		const logger = container.resolve<Logger>('logger');
 		try {
-			const logger = container.resolve<Logger>('logger');
 			logger.verbose('CRONO, checking sessions');
 			//console.table(Object.keys(tempList));
 			const validSessionKeys = await DBSessionChecker.check();
@@ -33,7 +33,7 @@ export default async (app: Router): Promise<void> => {
 			logger.verbose(`CRONO, sessions to remove: ${obsoletKeys.length}`);
 			obsoletKeys.forEach((key) => delete tempList[key]);
 		} catch (error) {
-			console.log(error);
+			logger.error(error);
 		}
 		return;
 	});
@@ -150,7 +150,6 @@ export default async (app: Router): Promise<void> => {
 					});
 				else return gpiRes.ok({ status: obtainResponse.status, data: obtainResponse.data });
 			} catch (error) {
-				console.log(error);
 				return gpiRes.error(
 					'EXTRACTOR_TIMEOUT',
 					'Instancia no inicializada',
