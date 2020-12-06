@@ -1,4 +1,5 @@
-import { Analyzer, DBAnalysis, DBController, DBEntry } from 'ea-core-gpi-pi';
+import { Anal, DBAnalysis, DBController, DBEntry } from 'ea-core-gpi-pi';
+import { Sentiments } from 'ea-core-gpi-pi/dist/Analyzer/Sentiments';
 import mysql from 'promise-mysql';
 import { open } from 'sqlite';
 import sqlite3 from 'sqlite3';
@@ -18,7 +19,7 @@ export class ServerDBController implements DBController {
 				 Cambiar el tipo unknown de la variable DB por el correspondiente
 				*/
 	}
-	private readonly sentiments: Analyzer.sentiments = {
+	private readonly sentiments: Sentiments.list = {
 		Asertividad: NaN,
 		'Autoconciencia Emocional': NaN,
 		Autoestima: NaN,
@@ -74,7 +75,7 @@ export class ServerDBController implements DBController {
 				.join(', ') +
 			', COUNT (e._id) as `total` FROM Entry e, Analysis a WHERE a.`_entryId` = e.`_id` AND e.metaKey = ?;';
 
-		const res: (Analyzer.sentiments & {
+		const res: (Sentiments.list & {
 			total: number;
 		})[] = await this.db.query(sentimentsAVGSQL, [metakey]);
 		if (res.length === 0) throw 'Empty result set for calc';
@@ -99,7 +100,7 @@ export class ServerDBController implements DBController {
 			{},
 		);
 	}
-	async insert(analysis: Analyzer.Analysis): Promise<void> {
+	async insert(analysis: Anal.Analysis): Promise<void> {
 		// TODO fix performance
 		if (!this.db) throw new Error('no db instance');
 		// prioritaria
