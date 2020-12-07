@@ -109,6 +109,7 @@ export class ServerDBController implements DBController {
 		if (!this.db) throw new CustomError('INTERNAL_ERROR', 'No DB instance');
 		// prioritaria
 		const { result, metaKey, extractor, modelVersion } = analysis;
+		let insertCount = 0;
 
 		for (const { input, sentiments } of result) {
 			try {
@@ -122,6 +123,7 @@ export class ServerDBController implements DBController {
 						false,
 					);
 				}
+				insertCount++;
 			} catch (error) {
 				if (error !== 'Entry Exists' && error !== 'Analysis Exists') {
 					this.logger.debug(`Insert error`);
@@ -131,6 +133,7 @@ export class ServerDBController implements DBController {
 				}
 			}
 		}
+		this.logger.debug(`${insertCount} Entries added`);
 
 		return;
 	}
