@@ -68,6 +68,14 @@ CREATE TABLE `Analysis` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'IGNORE_SPACE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
+/*!50003 CREATE*/ /*50017 DEFINER=``*/ /*!50003 TRIGGER `Entry_id_from_hash`
+BEFORE INSERT
+ON `Analysis` FOR EACH ROW
+BEGIN
+  IF (NEW.hash IS NOT NULL) THEN 
+    SET NEW._entryId = (SELECT _id FROM Entry WHERE Entry.hash = NEW.hash);
+  END IF;
+END */;;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
