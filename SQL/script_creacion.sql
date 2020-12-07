@@ -34,7 +34,7 @@ CREATE TABLE `Analysis` (
   'asertividad' decimal(5,4) NOT NULL DEFAULT 0.0000,
 	'autoconciencia emocional' decimal(5,4) NOT NULL DEFAULT 0.0000,
 	'autoestima' decimal(5,4) NOT NULL DEFAULT 0.0000,
-  'desarrollar y estimular a los demás' decimal(5,4) NOT NULL DEFAULT 0.0000,
+    'desarrollar y estimular a los demás' decimal(5,4) NOT NULL DEFAULT 0.0000,
 	'empatía' decimal(5,4) NOT NULL DEFAULT 0.0000,
 	'autocontrol emocional' decimal(5,4) NOT NULL DEFAULT 0.0000,
 	'influencia' decimal(5,4) NOT NULL DEFAULT 0.0000,
