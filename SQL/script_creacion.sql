@@ -30,26 +30,26 @@ DROP TABLE IF EXISTS `Analysis`;
 CREATE TABLE `Analysis` (
   `_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `_entryId` bigint(20) unsigned NOT NULL,
-  `asertividad` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `autoconciencia emocional` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `autoestima` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `desarrollar y estimular a los demás` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `empatía` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `autocontrol emocional` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `influencia` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `liderazgo` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `optimismo` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `relación social` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `colaboración y cooperación` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `comprensión organizativa` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `conciencia crítica` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `desarrollo de las relaciones` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `tolerancia a la frustración` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `comunicacion asertiva` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `manejo de conflictos` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `motivación de logro` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `percepción y comprensión emocional` decimal(5,4) NOT NULL DEFAULT 0.0000,
-  `violencia` decimal(5,4) NOT NULL DEFAULT 0.0000,
+  'asertividad' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'autoconciencia emocional' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'autoestima' decimal(5,4) NOT NULL DEFAULT 0.0000,
+  'desarrollar y estimular a los demás' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'empatía' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'autocontrol emocional' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'influencia' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'liderazgo' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'optimismo' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'relación social' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'colaboración y cooperación' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'comprensión organizativa' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'conciencia crítica' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'desarrollo de las relaciones' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'tolerancia a la frustración' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'comunicacion asertiva' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'manejo de conflictos' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'motivación de logro' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'percepción y comprensión emocional' decimal(5,4) NOT NULL DEFAULT 0.0000,
+	'violencia'; decimal(5,4) NOT NULL DEFAULT 0.0000,
   `modelVersion` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '0',
   `_deleted` tinyint(1) NOT NULL DEFAULT 0,
   `completionDate` date NOT NULL DEFAULT current_timestamp(),
@@ -68,6 +68,15 @@ CREATE TABLE `Analysis` (
 /*!50003 SET @saved_sql_mode       = @@sql_mode */ ;
 /*!50003 SET sql_mode              = 'IGNORE_SPACE,STRICT_TRANS_TABLES,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION' */ ;
 DELIMITER ;;
+/*!50003 CREATE*/ /*!50017 DEFINER=`sebastian`@`localhost`*/ /*!50003 TRIGGER `Entry_id_from_hash`
+BEFORE INSERT
+ON `Analysis` FOR EACH ROW
+BEGIN
+  IF (NEW.hash IS NOT NULL) THEN 
+    SET NEW._entryId = (SELECT _id FROM Entry WHERE Entry.hash = NEW.hash);
+  END IF;
+END */;;
+DELIMITER ;
 /*!50003 SET sql_mode              = @saved_sql_mode */ ;
 /*!50003 SET character_set_client  = @saved_cs_client */ ;
 /*!50003 SET character_set_results = @saved_cs_results */ ;
