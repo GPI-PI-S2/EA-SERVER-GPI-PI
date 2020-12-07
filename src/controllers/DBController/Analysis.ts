@@ -39,15 +39,15 @@ export class ServerDBAnalysis implements DBAnalysis {
 			return { _id: res.insertId, replaced: res.changedRows !== 0 };
 		}
 	}
-	async read(_id: DBController.id): Promise<DBAnalysis.Analysis> {
+	async read(_id: DBController.id, byEntry = false): Promise<DBAnalysis.Analysis> {
 		if (!this.db) throw new CustomError('INTERNAL_ERROR', 'No DB instance');
-		const res: DBAnalysis.Analysis[] = await this.db.query(
-			'SELECT * FROM Analysis WHERE _id = ? AND _deleted = 0;',
-			[_id],
-		);
+		const query = byEntry
+			? 'SELECT * FROM Analysis WHERE _entryId = ? AND _deleted = 0;'
+			: 'SELECT * FROM Analysis WHERE _id = ? AND _deleted = 0;';
+		const res: DBAnalysis.Analysis[] = await this.db.query(query, [_id]);
 		if (res.length === 0) {
 			this.logger.error('Empty result for _id ', _id);
-			throw `Empty result for reading _id ${_id}`;
+			throw new CustomError('NOT_FOUND', `Empty result for reading _id ${_id}`);
 		}
 		return { ...res[0] };
 	}

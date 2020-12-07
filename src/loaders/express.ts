@@ -6,7 +6,7 @@ import mysqlStore from 'express-mysql-session';
 import session from 'express-session';
 import { API_SECRET, DB_ADDRESS, DB_NAME, DB_PASS, DB_PORT, DB_USER } from '../config';
 import { GPIResponse } from '../controllers/GPIResponse';
-import { apiRoute } from '../routes';
+import { apiRoute, dbcontrollerRoute } from '../routes';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MySQLStore = mysqlStore(session as any);
 export default async ({ app }: { app: express.Application }): Promise<void> => {
@@ -49,6 +49,8 @@ export default async ({ app }: { app: express.Application }): Promise<void> => {
 
 	// Load API routes
 	app.use(await apiRoute());
+	// Load DB CONTROLLER routes
+	app.use(await dbcontrollerRoute());
 
 	/// catch 404 and forward to error handler
 	app.use((req, res) => {
@@ -62,7 +64,6 @@ export default async ({ app }: { app: express.Application }): Promise<void> => {
 		const response = new GPIResponse(res);
 		if (err.name === 'UnauthorizedError')
 			return response.error('UNAUTHORIZED', 'No está autorizado a consumir este servicio');
-
 		// Handle 401 thrown by Celebrate
 		if (isCelebrateError(err)) {
 			let body = '';

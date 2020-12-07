@@ -20,7 +20,6 @@ export class GPIResponse {
 		return this.error(customError.type, message);
 	}
 	error(type: GPIResponse.error, message: string, ...data: unknown[]): GPIResponse.JSONReturn {
-		console.log(data);
 		const code = GPIResponse.errors[type];
 		const estructure: GPIResponse.ErrorStructure = {
 			type,

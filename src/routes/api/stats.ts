@@ -1,3 +1,4 @@
+import { celebrate, Joi } from 'celebrate';
 import { DBController } from 'ea-core-gpi-pi';
 import { Router } from 'express';
 import { container } from 'tsyringe';
@@ -20,4 +21,26 @@ export default async (app: Router): Promise<void> => {
 			return response.error('INTERNAL_ERROR', 'Problemas al obtener los stats', error);
 		}
 	});
+	route.post(
+		'/calc',
+		isApiAuth,
+		celebrate({
+			body: Joi.object({
+				metaKey: Joi.string().max(250).required(),
+			}),
+		}),
+		async (req, res) => {
+			const response = new GPIResponse(res);
+			const DBController = container.resolve<DBController>('DBController');
+			try {
+				const { metaKey }: { metaKey: string } = req.body;
+				await DBController.connect();
+				const result = await DBController.calc(metaKey);
+				return response.ok(result);
+			} catch (error) {
+				if (error.isCustom) return response.errorFromCustom(error);
+				return response.error('INTERNAL_ERROR', 'Problemas al obtener los stats', error);
+			}
+		},
+	);
 };

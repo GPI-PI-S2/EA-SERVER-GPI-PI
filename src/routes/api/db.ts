@@ -58,7 +58,7 @@ export default async (app: Router): Promise<void> => {
 			try {
 				const { id }: { id: string } = req.body;
 				await DBController.connect();
-				const anal = await DBController.$analysis.read(id);
+				const anal = await DBController.$analysis.read(id, true);
 				return response.ok(anal);
 			} catch (error) {
 				if (error.isCustom) return response.errorFromCustom(error);

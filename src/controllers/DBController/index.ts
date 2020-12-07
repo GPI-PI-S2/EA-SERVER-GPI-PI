@@ -144,6 +144,7 @@ export class ServerDBController implements DBController {
 	}
 
 	async bulkDB(dbPath: string): Promise<DBController.bulkDBResult> {
+		if (!this.db) throw new CustomError('INTERNAL_ERROR', 'No DB instance');
 		const analysisMySQL: Required<Omit<DBAnalysis.Input, '_entryId'>> &
 			Pick<DBEntry.Entry, 'hash'> = {
 			...this.sentiments,

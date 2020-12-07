@@ -48,7 +48,7 @@ export class ServerDBEntry implements DBEntry {
 		);
 		if (res.length === 0) {
 			this.logger.error('Empty result for _id ', _id);
-			throw `Empty result for reading _id ${_id}`;
+			throw new CustomError('NOT_FOUND', `Empty result for reading _id ${_id}`);
 		}
 		return { ...res[0] };
 	}
