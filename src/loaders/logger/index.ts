@@ -4,14 +4,13 @@ import { IS_DEV, LOGS_LEVEL } from '../../config';
 import prismjs from './prismjs';
 
 const { combine, json, splat, cli, printf } = format;
-const myFormat = printf(({ level, message, timestamp, ...metadata }) => {
+const myFormat = printf(({ level, message, ...metadata }) => {
 	const msg = `${level}: ${message} `;
 	const splat = (Reflect.ownKeys(metadata).find(
 		(key) => String(key) === 'Symbol(splat)',
 	) as unknown) as string;
 	if (splat) {
 		const delimiter = '--------⬆️';
-		console.log(msg);
 		Object.values({ ...metadata[splat] }).forEach((value) => {
 			const r = prismjs(JSON.stringify(value, null, 2));
 			console.log(r);

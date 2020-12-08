@@ -33,7 +33,7 @@ function parseFormatedContent(domElement: any, recLevel: number) {
 	}
 	return highlightedSource;
 }
-export default (obj: string) => {
+export default (obj: string): string => {
 	// Parse source code and return HTML from PrismJS output
 	const prismCode = Prism.highlight(obj, languages[lang], lang);
 
