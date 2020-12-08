@@ -4,7 +4,15 @@ import cors from 'cors';
 import express from 'express';
 import mysqlStore from 'express-mysql-session';
 import session from 'express-session';
-import { API_SECRET, DB_ADDRESS, DB_NAME, DB_PASS, DB_PORT, DB_USER } from '../config';
+import {
+	API_SECRET,
+	DB_ADDRESS,
+	DB_NAME,
+	DB_PASS,
+	DB_PORT,
+	DB_USER,
+	SITE_PUBLIC_DIR,
+} from '../config';
 import { GPIResponse } from '../controllers/GPIResponse';
 import { apiRoute, dbcontrollerRoute } from '../routes';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -26,6 +34,10 @@ export default async ({ app }: { app: express.Application }): Promise<void> => {
 
 	// Middleware that transforms the raw string of req.body into json
 	app.use(bodyParser.json());
+
+	// Public dir
+	app.use(express.static('www'));
+	app.use(express.static(SITE_PUBLIC_DIR));
 
 	// Session
 	app.use(
