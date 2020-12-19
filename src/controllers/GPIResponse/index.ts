@@ -1,4 +1,6 @@
 import { Response } from 'express';
+import { container } from 'tsyringe';
+import { Logger } from 'winston';
 import { CustomError } from '../CustomError';
 
 export class GPIResponse {
@@ -20,13 +22,19 @@ export class GPIResponse {
 		return this.error(customError.type, message);
 	}
 	error(type: GPIResponse.error, message: string, ...data: unknown[]): GPIResponse.JSONReturn {
+		const logger = container.resolve<Logger>('logger');
 		const code = GPIResponse.errors[type];
 		const estructure: GPIResponse.ErrorStructure = {
 			type,
 			message: message ? message : 'Error desconocido',
 			data: data.length > 0 ? data : undefined,
 		};
-		return this.res.status(code).json(estructure);
+		try {
+			this.res.status(code);
+		} catch (error) {
+			logger.debug('Can not set status code');
+		}
+		return this.res.headersSent ? this.res.send() : this.res.json(estructure);
 	}
 }
 export namespace GPIResponse {

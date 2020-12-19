@@ -1,5 +1,5 @@
 import { Anal, DBAnalysis, DBController, DBEntry } from 'ea-core-gpi-pi';
-import { Sentiments } from 'ea-core-gpi-pi/dist/Analyzer/Sentiments';
+import { list } from 'ea-ieom2-gpi-pi/dist/barrer';
 import mysql from 'promise-mysql';
 import { open } from 'sqlite';
 import sqlite3 from 'sqlite3';
@@ -9,7 +9,6 @@ import { DB_ADDRESS, DB_LIMIT, DB_NAME, DB_PASS, DB_PORT, DB_USER } from '../../
 import { CustomError } from '../CustomError';
 import { ServerDBAnalysis } from './Analysis';
 import { ServerDBEntry } from './Entry';
-
 export class ServerDBController implements DBController {
 	constructor() {
 		/*
@@ -20,7 +19,7 @@ export class ServerDBController implements DBController {
 				 Cambiar el tipo unknown de la variable DB por el correspondiente
 				*/
 	}
-	private readonly sentiments: Sentiments.list = {
+	private readonly sentiments: list = {
 		asertividad: 0,
 		'autoconciencia emocional': 0,
 		autoestima: 0,
@@ -70,8 +69,14 @@ export class ServerDBController implements DBController {
 	async disconnect(): Promise<void> {
 		return;
 	}
-	async calc(metakey: string): Promise<DBController.calcResult> {
+	async calc(options?: {
+		extractor?: string;
+		metaKey?: string;
+	}): Promise<DBController.calcResult> {
 		if (!this.db) throw new CustomError('INTERNAL_ERROR', 'No DB instance');
+		if (!options) options = {};
+		// Pueden llegadr indefinidos
+		const { extractor, metaKey } = options;
 		const sentimentsAVGSQL =
 			'SELECT ' +
 			Object.keys(this.sentiments)
@@ -79,9 +84,9 @@ export class ServerDBController implements DBController {
 				.join(', ') +
 			', COUNT (e._id) as `total` FROM Entry e, Analysis a WHERE a.`_entryId` = e.`_id` AND e.metaKey = ?;';
 
-		const res: (Sentiments.list & {
+		const res: (list & {
 			total: number;
-		})[] = await this.db.query(sentimentsAVGSQL, [metakey]);
+		})[] = await this.db.query(sentimentsAVGSQL, [metaKey]);
 		if (res.length === 0) throw 'Empty result set for calc';
 		const sentimentsAVG = { ...res[0] };
 		delete sentimentsAVG.total;
