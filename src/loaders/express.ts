@@ -30,7 +30,7 @@ export default async ({ app }: { app: express.Application }): Promise<void> => {
 	});
 
 	// Enable Cross Origin Resource Sharing to all origins by default
-	app.use(cors({ origin: '*' }));
+	app.use(cors({ credentials: true, origin: true }));
 
 	// Middleware that transforms the raw string of req.body into json
 	app.use(bodyParser.json());
