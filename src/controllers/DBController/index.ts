@@ -74,19 +74,35 @@ export class ServerDBController implements DBController {
 		metaKey?: string;
 	}): Promise<DBController.calcResult> {
 		if (!this.db) throw new CustomError('INTERNAL_ERROR', 'No DB instance');
-		if (!options) options = {};
-		// Pueden llegadr indefinidos
 		const { extractor, metaKey } = options;
+		const filterArray = [
+			{
+				key: 'extractor = ?',
+				value: extractor,
+			},
+			{
+				key: 'metaKey = ?',
+				value: metaKey,
+			},
+		].filter(({ value }) => value); // seleccionar filtros thruthy
+
+		const SQLFilterKeys =
+			(filterArray.length === 0 ? '' : ' AND ') +
+			filterArray.map(({ key }) => key).join(' AND ');
+		const SQLFilterValues: (boolean | string | number)[] = filterArray.map(
+			({ value }) => value,
+		);
+
 		const sentimentsAVGSQL =
 			'SELECT ' +
 			Object.keys(this.sentiments)
 				.map((sentiment) => `AVG(a.\`${sentiment}\`) as \`${sentiment}\``)
 				.join(', ') +
-			', COUNT (e._id) as `total` FROM Entry e, Analysis a WHERE a.`_entryId` = e.`_id` AND e.metaKey = ?;';
+			`, COUNT (e._id) as \`total\` FROM Entry e, Analysis a WHERE a._entryId = e._id AND a._deleted=0 AND e._deleted=0 ${SQLFilterKeys};`;
 
 		const res: (list & {
 			total: number;
-		})[] = await this.db.query(sentimentsAVGSQL, [metaKey]);
+		})[] = await this.db.query(sentimentsAVGSQL, SQLFilterValues);
 		if (res.length === 0) throw 'Empty result set for calc';
 		const sentimentsAVG = { ...res[0] };
 		delete sentimentsAVG.total;
@@ -110,9 +126,7 @@ export class ServerDBController implements DBController {
 		);
 	}
 	async insert(analysis: Anal.Analysis): Promise<void> {
-		// TODO fix performance
 		if (!this.db) throw new CustomError('INTERNAL_ERROR', 'No DB instance');
-		// prioritaria
 		const { result, metaKey, extractor, modelVersion } = analysis;
 		let insertCount = 0;
 
