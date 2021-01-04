@@ -26,16 +26,19 @@ export default async (app: Router): Promise<void> => {
 		isApiAuth,
 		celebrate({
 			body: Joi.object({
-				metaKey: Joi.string().max(250).required(),
-			}),
+				extractor: Joi.string().max(250).optional(),
+				metaKey: Joi.string().max(250).optional(),
+			}).optional(),
 		}),
 		async (req, res) => {
 			const response = new GPIResponse(res);
 			const DBController = container.resolve<DBController>('DBController');
 			try {
-				const { metaKey }: { metaKey: string } = req.body;
+				let options: { metaKey?: string; extractor?: string } = req.body;
+				if (!options) options = {};
+				const { metaKey, extractor } = options;
 				await DBController.connect();
-				const result = await DBController.calc(metaKey);
+				const result = await DBController.calc({ extractor, metaKey });
 				return response.ok(result);
 			} catch (error) {
 				if (error.isCustom) return response.errorFromCustom(error);
