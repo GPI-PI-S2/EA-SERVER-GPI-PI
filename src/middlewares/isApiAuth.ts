@@ -11,7 +11,6 @@ export const isApiAuth: RequestHandler = async (req, res, next) => {
 		});
 		return response.error('UNAUTHORIZED', 'No está autorizado a consumir este servicio');
 	}
-
 	if (apiKey !== API_KEY)
 		return response.error(
 			'FORBIDEN',

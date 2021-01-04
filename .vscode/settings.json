@@ -1,0 +1,4 @@
+{
+    "errorLens.addAnnotationTextPrefixes": true,
+    "errorLens.addNumberOfDiagnostics": true
+}

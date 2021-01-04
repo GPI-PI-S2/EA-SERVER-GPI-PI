@@ -5,32 +5,33 @@ import express from 'express';
 import mysqlStore from 'express-mysql-session';
 import session from 'express-session';
 import {
-	API_SECRET,
-	DB_ADDRESS,
-	DB_NAME,
-	DB_PASS,
-	DB_PORT,
-	DB_USER,
-	SITE_PUBLIC_DIR,
+    API_SECRET,
+    DB_ADDRESS,
+    DB_NAME,
+    DB_PASS,
+    DB_PORT,
+    DB_USER,
+    SITE_PUBLIC_DIR
 } from '../config';
 import { GPIResponse } from '../controllers/GPIResponse';
 import { apiRoute, dbcontrollerRoute } from '../routes';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const MySQLStore = mysqlStore(session as any);
 export default async ({ app }: { app: express.Application }): Promise<void> => {
+    
 	/**
 	 * Health Check endpoints
 	 * @TODO Explain why they are here
 	 */
-	app.get('/status', (req, res) => {
+	app.get('/status', (_req, res) => {
 		res.status(200).end();
 	});
-	app.head('/status', (req, res) => {
+	app.head('/status', (_req, res) => {
 		res.status(200).end();
 	});
 
 	// Enable Cross Origin Resource Sharing to all origins by default
-	app.use(cors());
+	app.use(cors(/* {credentials: true, origin: 'http://localhost:8080'} */));
 
 	// Middleware that transforms the raw string of req.body into json
 	app.use(bodyParser.json());
@@ -53,7 +54,10 @@ export default async ({ app }: { app: express.Application }): Promise<void> => {
 			resave: true,
 			saveUninitialized: true,
 			cookie: {
-				maxAge: 10 * 1000 * 60,
+                maxAge: 10 * 1000 * 60,
+/*                 httpOnly: false,
+                secure: false,
+                sameSite:'none' */
 			},
 			rolling: true,
 		}),
@@ -66,12 +70,13 @@ export default async ({ app }: { app: express.Application }): Promise<void> => {
 
 	/// catch 404 and forward to error handler
 	app.use((req, res) => {
+        console.log(req.url)
 		const response = new GPIResponse(res);
 		return response.error('NOT_FOUND', 'No encontrado');
 	});
-
+    
 	/// error handlers
-	app.use((err, req, res, next) => {
+	app.use((err, _req, res, next) => {
 		// Handle 401 thrown by express-jwt library
 		const response = new GPIResponse(res);
 		if (err.name === 'UnauthorizedError')
@@ -88,7 +93,7 @@ export default async ({ app }: { app: express.Application }): Promise<void> => {
 		return next(err);
 	});
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	app.use((err, req, res, next) => {
+	app.use((err, _req, res, _next) => {
 		const response = new GPIResponse(res);
 		if (err.isCustom) return response.errorFromCustom(err);
 		else return response.error('INTERNAL_ERROR', 'Error interno del servidor', err.message);
